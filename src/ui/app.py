@@ -1,0 +1,383 @@
+"""ResumeLens - Interactive UI built with Streamlit.
+
+Features:
+- Live candidate technical qualification screening.
+- Step-by-step DFA state trace visualization with Graphviz.
+- Mathematical formalization viewer (5-tuples, transition tables, Mermaid diagrams).
+- Pre-configured test resumes and custom token input.
+- Real-time unit test suite execution.
+"""
+
+import sys
+from pathlib import Path
+
+# Ensure project root is in sys.path
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+import streamlit as st
+from src.stage3_classifier.automata_models import build_all_automata
+from src.stage3_classifier.classifier import ResumeClassifier, ClassificationStatus
+from src.stage3_classifier.profiles import PROFILES_REGISTRY
+
+# ============================================================================
+# Page Configuration
+# ============================================================================
+st.set_page_config(
+    page_title="ResumeLens | Motor de Lógica & Autómatas",
+    page_icon="🔍",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+# Custom Styling
+st.markdown(
+    """
+    <style>
+    .main-header {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin-bottom: 0.2rem;
+    }
+    .sub-header {
+        font-size: 1.1rem;
+        color: #64748b;
+        margin-bottom: 1.5rem;
+    }
+    .badge-accepted {
+        background-color: #dcfce7;
+        color: #15803d;
+        padding: 0.35rem 0.75rem;
+        border-radius: 9999px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        display: inline-block;
+    }
+    .badge-rejected {
+        background-color: #fee2e2;
+        color: #b91c1c;
+        padding: 0.35rem 0.75rem;
+        border-radius: 9999px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        display: inline-block;
+    }
+    .metric-card {
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        text-align: center;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# Initialize Classifier and Automata
+@st.cache_resource
+def get_classifier():
+    return ResumeClassifier()
+
+@st.cache_resource
+def get_automata():
+    return build_all_automata()
+
+classifier = get_classifier()
+automata = get_automata()
+
+# ============================================================================
+# Sample Resumes Dictionary
+# ============================================================================
+SAMPLE_RESUMES = {
+    "Wednesday Addams (Full Stack - Aceptado)": [
+        "JAVASCRIPT", "REACT", "NODE_JS", "POSTGRESQL", "GIT"
+    ],
+    "Mary Jane Watson (Machine Learning - Aceptado)": [
+        "PYTHON", "PANDAS", "NUMPY", "SCIKIT_LEARN", "TENSORFLOW", "SQL", "GIT"
+    ],
+    "Alex Murphy (Cloud & DevOps - Aceptado)": [
+        "BASH", "LINUX", "GITHUB_ACTIONS", "DOCKER", "KUBERNETES", "AWS", "TERRAFORM", "GIT"
+    ],
+    "Ada Lovelace (Data Scientist - Aceptado)": [
+        "PYTHON", "PANDAS", "NUMPY", "SEABORN", "PLOTLY", "SCIKIT_LEARN", "GIT"
+    ],
+    "Candidato Incompleto (Rechazado - Falta Backend y VCS)": [
+        "JAVASCRIPT", "REACT", "POSTGRESQL"
+    ],
+    "Candidato Desordenado (Rechazado - Git antes de Backend)": [
+        "JAVASCRIPT", "GIT", "NODE_JS", "POSTGRESQL"
+    ],
+    "Candidato Mixto Incompatible (Rechazado - Token foráneo)": [
+        "JAVASCRIPT", "NODE_JS", "SCIKIT_LEARN", "GIT"
+    ],
+}
+
+# ============================================================================
+# Sidebar
+# ============================================================================
+with st.sidebar:
+    st.image(
+        "https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Python-Dark.svg",
+        width=50,
+    )
+    st.title("ResumeLens")
+    st.caption("Estructuras Discretas III — Tarea Integradora")
+    st.divider()
+
+    st.subheader("📌 Rol del Sistema")
+    st.markdown(
+        """
+        - **Integrante 2:** Motor de Lógica (Etapa 3) & Frontend
+        - **Modelo Formal:** Autómatas Finitos Deterministas (DFA)
+        - **Librería Formal:** `pyformlang`
+        - **Perfiles Soportados:** 4 (2 de Software, 2 de AI/Data)
+        """
+    )
+    st.divider()
+
+    st.subheader("👤 Equipo")
+    st.info("Víctor Team — Integrante 2 (Motor de Lógica)")
+
+
+# ============================================================================
+# Main Header
+# ============================================================================
+st.markdown('<div class="main-header">🔍 ResumeLens: Motor de Clasificación Formal</div>', unsafe_allow_html=True)
+st.markdown(
+    '<div class="sub-header">Reconocimiento de patrones de cualificación profesional mediante Autómatas Finitos Deterministas (DFA) en <code>pyformlang</code>.</div>',
+    unsafe_allow_html=True,
+)
+
+# Tabs
+tab_eval, tab_formal, tab_tests, tab_about = st.tabs([
+    "🚀 Evaluador de Currículums",
+    "📐 Formalización Matemática (5-Tuplas)",
+    "🧪 Suite de Pruebas Unitarias",
+    "📖 Sobre el Proyecto",
+])
+
+# ============================================================================
+# Tab 1: Live Candidate Screening
+# ============================================================================
+with tab_eval:
+    st.subheader("1. Selección o Ingreso de Tokens Normalizados")
+    col_input_mode, col_tokens = st.columns([1, 2])
+
+    with col_input_mode:
+        selected_sample = st.selectbox(
+            "Cargar Ejemplo Preconfigurado:",
+            ["(Personalizado)"] + list(SAMPLE_RESUMES.keys()),
+        )
+
+        if selected_sample != "(Personalizado)":
+            default_token_str = ", ".join(SAMPLE_RESUMES[selected_sample])
+        else:
+            default_token_str = "JAVASCRIPT, REACT, NODE_JS, POSTGRESQL, GIT"
+
+    with col_tokens:
+        input_text = st.text_area(
+            "Secuencia de Tokens Normalizados (separados por coma o espacio):",
+            value=default_token_str,
+            help="Ingresa tokens en mayúscula según el orden canónico generado en la Etapa 2.",
+            height=100,
+        )
+
+    # Clean and split tokens
+    raw_tokens = [t.strip().upper() for t in input_text.replace("\n", " ").split(",") if t.strip()]
+    cleaned_tokens: list[str] = []
+    for chunk in raw_tokens:
+        cleaned_tokens.extend([t for t in chunk.split() if t])
+
+    st.write(f"**Tokens a evaluar ({len(cleaned_tokens)}):** `{cleaned_tokens}`")
+    st.divider()
+
+    # Classification Report
+    st.subheader("2. Veredicto del Motor de Autómatas por Perfil")
+    report = classifier.classify(cleaned_tokens)
+
+    cols = st.columns(4)
+    for idx, (pid, pdef) in enumerate(PROFILES_REGISTRY.items()):
+        result = report.results_by_profile[pid]
+        with cols[idx]:
+            st.markdown(f"#### {pdef.title}")
+            st.caption(f"Dominio: {pdef.domain}")
+            if result.is_accepted:
+                st.markdown('<span class="badge-accepted">✅ ACCEPTED</span>', unsafe_allow_html=True)
+                st.success(f"Estado final: `{result.final_state}`")
+            else:
+                st.markdown('<span class="badge-rejected">❌ REJECTED</span>', unsafe_allow_html=True)
+                st.error(f"Estado: `{result.final_state}`")
+            
+            with st.expander("Ver diagnóstico"):
+                if result.is_accepted:
+                    st.write("🎉 Cumple con todas las categorías obligatorias en orden canónico.")
+                    st.write(f"**Categorías satisfechas:** {', '.join(result.satisfied_categories)}")
+                else:
+                    st.write(f"**Causa:** {result.rejection_reason}")
+                    if result.missing_categories:
+                        st.write(f"**Faltan:** {', '.join(result.missing_categories)}")
+
+    st.divider()
+
+    # Detailed DFA Inspector
+    st.subheader("3. Trazabilidad de Estados y Diagnóstico (Trace)")
+    selected_inspect_pid = st.selectbox(
+        "Seleccionar perfil para inspeccionar la traza de estados en su DFA:",
+        list(PROFILES_REGISTRY.keys()),
+        format_func=lambda x: PROFILES_REGISTRY[x].title,
+    )
+
+    inspected_result = report.results_by_profile[selected_inspect_pid]
+    inspected_auto = automata[selected_inspect_pid]
+
+    # Status summary
+    col_stat1, col_stat2, col_stat3 = st.columns(3)
+    with col_stat1:
+        st.metric("Estado Inicial", "q0")
+    with col_stat2:
+        st.metric("Estado Final Alcanzado", inspected_result.final_state)
+    with col_stat3:
+        st.metric("Estado de Aceptación Esperado", inspected_result.expected_final_state)
+
+    st.markdown("##### Tabla de Ejecución Paso a Paso")
+    if inspected_result.trace:
+        trace_data = [
+            {
+                "Paso": step.step_number,
+                "Estado Origen": step.source_state,
+                "Token Consumido": step.symbol,
+                "Estado Destino": step.target_state,
+                "Categoría": step.category or "N/A",
+                "¿Transición Válida?": "✅ Válida" if step.is_valid_transition else "❌ Violación (q_trap)",
+            }
+            for step in inspected_result.trace
+        ]
+        st.dataframe(trace_data, hide_index=True)
+    else:
+        st.warning("No se procesaron tokens (secuencia vacía).")
+
+    # Optional Excalidraw diagram viewer
+    diagram_path = PROJECT_ROOT / "docs" / "diagrams" / f"{selected_inspect_pid}.png"
+    if diagram_path.exists():
+        st.markdown("##### Diagrama de Transición del Autómata (Excalidraw / Manual)")
+        st.image(str(diagram_path), caption=f"Diagrama de {inspected_auto.profile.title}")
+
+
+# ============================================================================
+# Tab 2: Mathematical Formalization (5-Tuples)
+# ============================================================================
+with tab_formal:
+    st.subheader("Formalización Matemática Rigurosa de los Autómatas")
+    st.markdown(
+        """
+        Cada autómata está formalizado como un **Autómata Finito Determinista (DFA)**:
+        $$\\mathcal{M} = (Q, \\Sigma, \\delta, q_0, F)$$
+        Cumpliendo con los requerimientos teóricos de la **Etapa 3**.
+        """
+    )
+
+    selected_formal_pid = st.selectbox(
+        "Ver Formalización del Perfil:",
+        list(PROFILES_REGISTRY.keys()),
+        format_func=lambda x: f"{PROFILES_REGISTRY[x].title} ({PROFILES_REGISTRY[x].domain})",
+        key="formal_selector",
+    )
+
+    f_auto = automata[selected_formal_pid]
+    f_def = f_auto.profile
+    f_tuple = f_auto.get_formal_tuple()
+
+    c1, c2 = st.columns([1, 1])
+
+    with c1:
+        st.markdown(f"### {f_def.title}")
+        st.write(f"**Dominio:** {f_def.domain}")
+        st.write(
+            f"**Orden Canónico:** "
+            + " $\\to$ ".join([f"`{c.name}`" for c in f_def.canonical_categories])
+        )
+
+        st.markdown("#### 1. Conjunto de Estados ($Q$)")
+        st.write(f"`{f_tuple.states}`")
+
+        st.markdown("#### 2. Alfabeto de Entrada ($\\Sigma$)")
+        st.write(f"Contiene **{len(f_tuple.alphabet)}** símbolos terminales:")
+        st.write(f"`{sorted(list(f_tuple.alphabet))}`")
+
+        st.markdown("#### 3. Estado Inicial ($q_0$) y Aceptación ($F$)")
+        st.write(f"- **Estado Inicial $q_0$:** `{f_tuple.initial_state}`")
+        st.write(f"- **Estados de Aceptación $F$:** `{f_tuple.final_states}`")
+
+    with c2:
+        st.markdown("#### 4. Diagrama del Autómata (Excalidraw / Dibujo Manual)")
+        diag_file = PROJECT_ROOT / "docs" / "diagrams" / f"{selected_formal_pid}.png"
+        if diag_file.exists():
+            st.image(str(diag_file), caption=f"Diagrama Excalidraw - {f_def.title}")
+        else:
+            st.info(
+                f"📌 Puedes colocar la imagen de tu diagrama de Excalidraw o dibujo a mano en:\n"
+                f"`docs/diagrams/{selected_formal_pid}.png` para visualizarlo directamente aquí."
+            )
+
+    st.divider()
+    st.markdown("#### 5. Tabla de Transiciones Formales $\\delta(q, s)$")
+    trans_table = [
+        {"Estado Origen (q)": src, "Símbolo (s)": sym, "Estado Destino (δ)": dst}
+        for (src, sym), dst in sorted(f_tuple.transitions.items())
+    ]
+    st.dataframe(trans_table, hide_index=True)
+
+
+# ============================================================================
+# Tab 3: Unit Test Suite
+# ============================================================================
+with tab_tests:
+    st.subheader("🧪 Ejecución de Pruebas Automatizadas (Pytest)")
+    st.markdown(
+        "Ejecuta en tiempo real la suite completa de pruebas unitarias (`tests/test_stage3.py`) "
+        "para validar los casos de aceptación, rechazo, orden canónico y 5-tuplas."
+    )
+
+    if st.button("▶️ Ejecutar Pruebas con Pytest", type="primary"):
+        import subprocess
+
+        with st.spinner("Ejecutando pytest tests/test_stage3.py..."):
+            proc = subprocess.run(
+                [sys.executable, "-m", "pytest", "tests/test_stage3.py", "-v"],
+                capture_output=True,
+                text=True,
+                cwd=str(PROJECT_ROOT),
+            )
+
+        if proc.returncode == 0:
+            st.success("✅ ¡Todas las pruebas pasaron satisfactoriamente!")
+        else:
+            st.error("❌ Se encontraron errores en la ejecución de pruebas.")
+
+        st.code(proc.stdout, language="bash")
+
+
+# ============================================================================
+# Tab 4: About
+# ============================================================================
+with tab_about:
+    st.subheader("ResumeLens: Formal Language-Based Resume Screening")
+    st.markdown(
+        """
+        ### Resultados de Aprendizaje Evaluados (RAA):
+        - **RAA1:** Aplicar expresiones regulares y teoría de autómatas en la solución de problemas de procesamiento de lenguaje y reconocimiento de patrones.
+        - **RAA2:** Aplicar conceptos de gramáticas generativas en la implementación de sistemas de procesamiento de lenguajes especializados.
+        - **RAA3:** Simplificar gramáticas mediante formas normales para el procesamiento y análisis eficiente de lenguajes.
+        - **RAA6:** Comunicar con vocabulario y lenguaje especializado las ideas principales sobre los modelos computacionales estudiados y sus aplicaciones.
+
+        ---
+        ### Arquitectura del Pipeline:
+        1. **Etapa 1:** Extracción con Expresiones Regulares (`re`).
+        2. **Etapa 2:** Normalización y Orden Canónico con Transductores Finitos (FST).
+        3. **Etapa 3:** **Reconocimiento de Patrones de Cualificación con Autómatas Finitos (`pyformlang`)**.
+        4. **Etapa 4:** Lenguaje DSL de Especificación con Gramáticas Libres de Contexto (`textX`) y renderizado HTML.
+        """
+    )
