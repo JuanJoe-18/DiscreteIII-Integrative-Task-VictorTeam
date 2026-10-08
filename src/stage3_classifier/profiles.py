@@ -51,23 +51,53 @@ FULL_STACK_PROFILE = ProfileDefinition(
     domain="Software Engineering",
     canonical_categories=[
         Category(
-            name="FRONTEND",
-            description="Client-side frameworks and web technologies",
-            skills={"JAVASCRIPT", "TYPESCRIPT", "REACT", "ANGULAR", "VUE"},
+            name="EXPERIENCE",
+            description="Años de experiencia profesional o rango numérico (\\d)",
+            skills={"\\d", "1", "2", "3", "4", "5", "6", "7", "8", "9"},
         ),
         Category(
-            name="BACKEND",
-            description="Server-side frameworks and backend runtime environments",
-            skills={"NODE_JS", "DJANGO", "SPRING_BOOT", "EXPRESS", "FASTAPI"},
+            name="FE_LANGUAGE",
+            description="Lenguajes de programación del lado del cliente",
+            skills={"JAVASCRIPT", "TYPESCRIPT", "HTML", "CSS"},
         ),
         Category(
-            name="DATABASE",
-            description="Relational and NoSQL persistence technologies",
-            skills={"POSTGRESQL", "MONGODB", "MYSQL", "REDIS", "SQL"},
+            name="FE_FRAMEWORK",
+            description="Frameworks y librerías de interfaz de usuario",
+            skills={"REACT", "ANGULAR", "VUE", "SVELTE", "NEXTJS"},
+        ),
+        Category(
+            name="BE_LANGUAGE",
+            description="Lenguajes y entornos de ejecución del backend",
+            skills={"NODE_JS", "PYTHON", "JAVA", "CSHARP", "GO"},
+        ),
+        Category(
+            name="BE_FRAMEWORK",
+            description="Frameworks del lado del servidor",
+            skills={"EXPRESS", "DJANGO", "SPRING_BOOT", "FASTAPI", "NESTJS"},
+        ),
+        Category(
+            name="API_COMMUNICATION",
+            description="Protocolos y arquitectura de APIs",
+            skills={"REST", "GRAPHQL", "WEBSOCKET"},
+        ),
+        Category(
+            name="DATABASE_SQL",
+            description="Bases de datos relacionales SQL",
+            skills={"POSTGRESQL", "MYSQL", "SQL", "SQLITE", "ORACLE"},
+        ),
+        Category(
+            name="DATABASE_NOSQL",
+            description="Bases de datos NoSQL y almacenamiento en memoria",
+            skills={"MONGODB", "REDIS", "FIREBASE"},
+        ),
+        Category(
+            name="DEVOPS_CLOUD",
+            description="Contenedores y despliegue en la nube",
+            skills={"DOCKER", "KUBERNETES", "AWS"},
         ),
         Category(
             name="VERSION_CONTROL",
-            description="Source code version control and collaborative tools",
+            description="Control de versiones y repositorios colaborativos",
             skills={"GIT", "GITHUB", "GITLAB"},
         ),
     ],

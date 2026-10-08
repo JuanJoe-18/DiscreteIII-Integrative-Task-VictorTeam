@@ -58,7 +58,11 @@ class ProfileAutomaton:
         self._build_automaton()
 
     def _build_automaton(self) -> None:
-        """Constructs the DFA states and transitions according to canonical categories."""
+        """Constructs the DFA states and transitions."""
+        if self.profile.profile_id == "full_stack":
+            self._build_fullstack_automaton()
+            return
+
         categories = self.profile.canonical_categories
         k = len(categories)
 
@@ -97,6 +101,134 @@ class ProfileAutomaton:
                 next_cat = categories[i]
                 for skill in next_cat.skills:
                     self.dfa.add_transition(curr_state, Symbol(skill), next_state)
+
+    def _build_fullstack_automaton(self) -> None:
+        """Constructs an expanded multi-state DFA for the Full Stack Developer profile.
+        
+        States (11 states):
+        - q0: Initial state
+        - q_experience: Verified experience via numeric range \\d (1..9)
+        - q_fe_language: Client-side languages (JavaScript, TypeScript, HTML, CSS)
+        - q_fe_framework: UI Frameworks (React, Angular, Vue, Svelte, NextJS)
+        - q_be_language: Backend runtime/languages (NodeJS, Python, Java, C#, Go)
+        - q_be_framework: Server frameworks (Express, Django, Spring Boot, FastAPI, NestJS)
+        - q_api_communication: APIs & protocols (REST, GraphQL, WebSocket)
+        - q_database_sql: Relational SQL DBs (PostgreSQL, MySQL, SQL, SQLite, Oracle)
+        - q_database_nosql: NoSQL & Caches (MongoDB, Redis, Firebase)
+        - q_devops_cloud: Containers & Cloud (Docker, Kubernetes, AWS)
+        - q_version_control: VCS & Collaboration (Git, GitHub, GitLab) [Final State]
+        """
+        self.state_names = [
+            "q0",
+            "q_experience",
+            "q_fe_language",
+            "q_fe_framework",
+            "q_be_language",
+            "q_be_framework",
+            "q_api_communication",
+            "q_database_sql",
+            "q_database_nosql",
+            "q_devops_cloud",
+            "q_version_control",
+        ]
+        self.state_objects = {name: State(name) for name in self.state_names}
+        q0 = self.state_objects["q0"]
+        q_vcs = self.state_objects["q_version_control"]
+
+        self.dfa.add_start_state(q0)
+        self.dfa.add_final_state(q_vcs)
+
+        cats = {c.name: c.skills for c in self.profile.canonical_categories}
+
+        # 1. From q0:
+        # Numeric range \d (e.g., \d or digits 0-9) leads to q_experience
+        for d in cats["EXPERIENCE"]:
+            self.dfa.add_transition(q0, Symbol(d), self.state_objects["q_experience"])
+        # Direct entrance on Frontend Language if experience is omitted
+        for s in cats["FE_LANGUAGE"]:
+            self.dfa.add_transition(q0, Symbol(s), self.state_objects["q_fe_language"])
+
+        # 2. From q_experience:
+        for d in cats["EXPERIENCE"]:
+            self.dfa.add_transition(self.state_objects["q_experience"], Symbol(d), self.state_objects["q_experience"])
+        for s in cats["FE_LANGUAGE"]:
+            self.dfa.add_transition(self.state_objects["q_experience"], Symbol(s), self.state_objects["q_fe_language"])
+
+        # 3. From q_fe_language:
+        for s in cats["FE_LANGUAGE"]:
+            self.dfa.add_transition(self.state_objects["q_fe_language"], Symbol(s), self.state_objects["q_fe_language"])
+        for s in cats["FE_FRAMEWORK"]:
+            self.dfa.add_transition(self.state_objects["q_fe_language"], Symbol(s), self.state_objects["q_fe_framework"])
+        for s in cats["BE_LANGUAGE"]:
+            self.dfa.add_transition(self.state_objects["q_fe_language"], Symbol(s), self.state_objects["q_be_language"])
+        for s in cats["BE_FRAMEWORK"]:
+            self.dfa.add_transition(self.state_objects["q_fe_language"], Symbol(s), self.state_objects["q_be_framework"])
+
+        # 4. From q_fe_framework:
+        for s in cats["FE_FRAMEWORK"]:
+            self.dfa.add_transition(self.state_objects["q_fe_framework"], Symbol(s), self.state_objects["q_fe_framework"])
+        for s in cats["BE_LANGUAGE"]:
+            self.dfa.add_transition(self.state_objects["q_fe_framework"], Symbol(s), self.state_objects["q_be_language"])
+        for s in cats["BE_FRAMEWORK"]:
+            self.dfa.add_transition(self.state_objects["q_fe_framework"], Symbol(s), self.state_objects["q_be_framework"])
+
+        # 5. From q_be_language:
+        for s in cats["BE_LANGUAGE"]:
+            self.dfa.add_transition(self.state_objects["q_be_language"], Symbol(s), self.state_objects["q_be_language"])
+        for s in cats["BE_FRAMEWORK"]:
+            self.dfa.add_transition(self.state_objects["q_be_language"], Symbol(s), self.state_objects["q_be_framework"])
+        for s in cats["API_COMMUNICATION"]:
+            self.dfa.add_transition(self.state_objects["q_be_language"], Symbol(s), self.state_objects["q_api_communication"])
+        for s in cats["DATABASE_SQL"]:
+            self.dfa.add_transition(self.state_objects["q_be_language"], Symbol(s), self.state_objects["q_database_sql"])
+        for s in cats["DATABASE_NOSQL"]:
+            self.dfa.add_transition(self.state_objects["q_be_language"], Symbol(s), self.state_objects["q_database_nosql"])
+
+        # 6. From q_be_framework:
+        for s in cats["BE_FRAMEWORK"]:
+            self.dfa.add_transition(self.state_objects["q_be_framework"], Symbol(s), self.state_objects["q_be_framework"])
+        for s in cats["API_COMMUNICATION"]:
+            self.dfa.add_transition(self.state_objects["q_be_framework"], Symbol(s), self.state_objects["q_api_communication"])
+        for s in cats["DATABASE_SQL"]:
+            self.dfa.add_transition(self.state_objects["q_be_framework"], Symbol(s), self.state_objects["q_database_sql"])
+        for s in cats["DATABASE_NOSQL"]:
+            self.dfa.add_transition(self.state_objects["q_be_framework"], Symbol(s), self.state_objects["q_database_nosql"])
+
+        # 7. From q_api_communication:
+        for s in cats["API_COMMUNICATION"]:
+            self.dfa.add_transition(self.state_objects["q_api_communication"], Symbol(s), self.state_objects["q_api_communication"])
+        for s in cats["DATABASE_SQL"]:
+            self.dfa.add_transition(self.state_objects["q_api_communication"], Symbol(s), self.state_objects["q_database_sql"])
+        for s in cats["DATABASE_NOSQL"]:
+            self.dfa.add_transition(self.state_objects["q_api_communication"], Symbol(s), self.state_objects["q_database_nosql"])
+
+        # 8. From q_database_sql:
+        for s in cats["DATABASE_SQL"]:
+            self.dfa.add_transition(self.state_objects["q_database_sql"], Symbol(s), self.state_objects["q_database_sql"])
+        for s in cats["DATABASE_NOSQL"]:
+            self.dfa.add_transition(self.state_objects["q_database_sql"], Symbol(s), self.state_objects["q_database_nosql"])
+        for s in cats["DEVOPS_CLOUD"]:
+            self.dfa.add_transition(self.state_objects["q_database_sql"], Symbol(s), self.state_objects["q_devops_cloud"])
+        for s in cats["VERSION_CONTROL"]:
+            self.dfa.add_transition(self.state_objects["q_database_sql"], Symbol(s), self.state_objects["q_version_control"])
+
+        # 9. From q_database_nosql:
+        for s in cats["DATABASE_NOSQL"]:
+            self.dfa.add_transition(self.state_objects["q_database_nosql"], Symbol(s), self.state_objects["q_database_nosql"])
+        for s in cats["DEVOPS_CLOUD"]:
+            self.dfa.add_transition(self.state_objects["q_database_nosql"], Symbol(s), self.state_objects["q_devops_cloud"])
+        for s in cats["VERSION_CONTROL"]:
+            self.dfa.add_transition(self.state_objects["q_database_nosql"], Symbol(s), self.state_objects["q_version_control"])
+
+        # 10. From q_devops_cloud:
+        for s in cats["DEVOPS_CLOUD"]:
+            self.dfa.add_transition(self.state_objects["q_devops_cloud"], Symbol(s), self.state_objects["q_devops_cloud"])
+        for s in cats["VERSION_CONTROL"]:
+            self.dfa.add_transition(self.state_objects["q_devops_cloud"], Symbol(s), self.state_objects["q_version_control"])
+
+        # 11. From q_version_control:
+        for s in cats["VERSION_CONTROL"]:
+            self.dfa.add_transition(self.state_objects["q_version_control"], Symbol(s), self.state_objects["q_version_control"])
 
     def accepts(self, word: List[str]) -> bool:
         """Evaluates whether the sequence of normalized tokens is accepted by the DFA."""
