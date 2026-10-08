@@ -5,7 +5,7 @@
 
 ---
 
-## 🎯 Descripción del Proyecto
+##  Descripción del Proyecto
 **ResumeLens** es un sistema automatizado de preselección curricular basado en la teoría de lenguajes formales y modelos computacionales. El sistema procesa hojas de vida textuales, extrae competencias técnicas, las normaliza a un formato canónico y determina si el perfil del candidato satisface formalmente los requisitos de cualificación de un cargo profesional sin emitir juicios heurísticos o subjetivos.
 
 ### Pipeline de 4 Etapas:
@@ -16,7 +16,7 @@
 
 ---
 
-## 👥 Perfiles Profesionales Soportados (4 Perfiles)
+##  Perfiles Profesionales Soportados (4 Perfiles)
 
 | # | Perfil | Dominio | Orden Canónico de Categorías |
 |---|---|---|---|
@@ -27,7 +27,7 @@
 
 ---
 
-## 📂 Estructura del Repositorio
+##  Estructura del Repositorio
 
 ```
 DiscreteIII-Integrative-Task-VictorTeam/
@@ -55,7 +55,7 @@ DiscreteIII-Integrative-Task-VictorTeam/
 
 ---
 
-## 🚀 Instalación y Ejecución
+##  Instalación y Ejecución
 
 ### 1. Clonar el repositorio y preparar el entorno
 ```bash
@@ -86,7 +86,7 @@ La interfaz se abrirá en `http://localhost:8501`, permitiendo:
 
 ---
 
-## 📐 Formalización Matemática (Resumen de la 5-Tupla)
+##  Formalización Matemática (Resumen de la 5-Tupla)
 
 Para cada autómata $i \in \{FS, ML, DEVOPS, DS\}$:
 $$\mathcal{M}_i = (Q_i, \Sigma_i, \delta_i, q_0, F_i)$$
