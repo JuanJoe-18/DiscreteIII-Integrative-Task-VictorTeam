@@ -2,5 +2,6 @@
 pyformlang>=1.0.11
 networkx>=3.4
 pydot>=3.0.0
+graphviz>=0.21
 pytest>=8.0.0
 streamlit>=1.40.0
