@@ -45,43 +45,87 @@ $$\mathcal{M} = (Q, \Sigma, \delta, q_0, F)$$
 $$\mathcal{M}_{FS} = (Q_{FS}, \Sigma_{FS}, \delta_{FS}, q_0, F_{FS})$$
 
 #### 1. Conjunto de Estados $Q_{FS}$:
+El autómata de Full Stack Developer modela un pipeline granular de validación técnica con **11 estados de control** más el estado trampa:
 - $q_0$: Estado inicial. Ninguna competencia validada.
-- $q_{fe}$: Competencia de **Frontend** validada ($\ge 1$ tecnología frontend).
-- $q_{be}$: Competencia de **Backend** validada ($\ge 1$ tecnología backend posterior a frontend).
-- $q_{db}$: Competencia de **Base de Datos** validada ($\ge 1$ tecnología de base de datos posterior a backend).
-- $q_{acc}$: **Aceptado.** Competencia de **Control de Versiones** validada ($\ge 1$ tecnología VCS posterior a base de datos).
+- $q_{experience}$: Años de experiencia previa validados ($\backslash d \in \{1, 2, \dots, 9\}$ o token `\d`). Entrada opcional/directa.
+- $q_{fe\_language}$: Lenguajes de frontend cliente validados ($\text{JAVASCRIPT}, \text{TYPESCRIPT}, \text{HTML5}, \text{CSS3}$).
+- $q_{fe\_framework}$: Frameworks o librerías de interfaz validadas ($\text{REACT}, \text{ANGULAR}, \text{VUE}, \text{NEXT\_JS}, \text{TAILWIND}$).
+- $q_{be\_language}$: Lenguajes de programación backend validados ($\text{PYTHON}, \text{JAVA}, \text{CSHARP}, \text{GO}, \text{RUST}, \text{PHP}$).
+- $q_{be\_framework}$: Frameworks de servidor backend validados ($\text{NODE\_JS}, \text{EXPRESS}, \text{DJANGO}, \text{FASTAPI}, \text{SPRING\_BOOT}, \text{DOTNET}$).
+- $q_{api\_communication}$: Protocolos y arquitectura de comunicación API validados ($\text{REST}, \text{GRAPHQL}, \text{G\_RPC}, \text{WEB\_SOCKETS}$).
+- $q_{database\_sql}$: Base de datos relacional (SQL) validada ($\text{POSTGRESQL}, \text{MYSQL}, \text{SQL\_SERVER}, \text{ORACLE}$).
+- $q_{database\_nosql}$: Base de datos NoSQL / Almacenamiento clave-valor validado ($\text{MONGODB}, \text{REDIS}, \text{ELASTICSEARCH}, \text{CASSANDRA}$).
+- $q_{devops\_cloud}$: Contenedores y entornos cloud validados ($\text{DOCKER}, \text{KUBERNETES}, \text{AWS}, \text{AZURE}, \text{GCP}$).
+- $q_{version\_control}$: **Aceptado.** Control de versiones y flujo de trabajo colaborativo validado ($\text{GIT}, \text{GITHUB}, \text{GITLAB}$).
 - $q_{trap}$: Estado de rechazo / trampa (orden inválido o token no perteneciente).
 
-$$Q_{FS} = \{q_0, q_{fe}, q_{be}, q_{db}, q_{acc}, q_{trap}\}$$
+$$Q_{FS} = \{q_0, q_{experience}, q_{fe\_language}, q_{fe\_framework}, q_{be\_language}, q_{be\_framework}, q_{api\_communication}, q_{database\_sql}, q_{database\_nosql}, q_{devops\_cloud}, q_{version\_control}, q_{trap}\}$$
 
 #### 2. Alfabeto de Entrada $\Sigma_{FS}$:
-El alfabeto está particionado en 4 categorías disjuntas:
-- $C_{FE} = \{\text{JAVASCRIPT}, \text{TYPESCRIPT}, \text{REACT}, \text{ANGULAR}, \text{VUE}\}$
-- $C_{BE} = \{\text{NODE\_JS}, \text{DJANGO}, \text{SPRING\_BOOT}, \text{EXPRESS}, \text{FASTAPI}\}$
-- $C_{DB} = \{\text{POSTGRESQL}, \text{MONGODB}, \text{MYSQL}, \text{REDIS}, \text{SQL}\}$
+El alfabeto está particionado en 10 categorías disjuntas con granularidad por competencia individual:
+- $C_{EXP} = \{\backslash\text{d}, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9\}$ *(Rango numérico de experiencia laboral)*
+- $C_{FE\_LANG} = \{\text{JAVASCRIPT}, \text{TYPESCRIPT}, \text{HTML5}, \text{CSS3}\}$
+- $C_{FE\_FW} = \{\text{REACT}, \text{ANGULAR}, \text{VUE}, \text{NEXT\_JS}, \text{TAILWIND}\}$
+- $C_{BE\_LANG} = \{\text{PYTHON}, \text{JAVA}, \text{CSHARP}, \text{GO}, \text{RUST}, \text{PHP}\}$
+- $C_{BE\_FW} = \{\text{NODE\_JS}, \text{EXPRESS}, \text{DJANGO}, \text{FASTAPI}, \text{SPRING\_BOOT}, \text{DOTNET}\}$
+- $C_{API} = \{\text{REST}, \text{GRAPHQL}, \text{G\_RPC}, \text{WEB\_SOCKETS}\}$
+- $C_{DB\_SQL} = \{\text{POSTGRESQL}, \text{MYSQL}, \text{SQL\_SERVER}, \text{ORACLE}\}$
+- $C_{DB\_NOSQL} = \{\text{MONGODB}, \text{REDIS}, \text{ELASTICSEARCH}, \text{CASSANDRA}\}$
+- $C_{DEVOPS} = \{\text{DOCKER}, \text{KUBERNETES}, \text{AWS}, \text{AZURE}, \text{GCP}\}$
 - $C_{VCS} = \{\text{GIT}, \text{GITHUB}, \text{GITLAB}\}$
 
-$$\Sigma_{FS} = C_{FE} \cup C_{BE} \cup C_{DB} \cup C_{VCS}$$
+$$\Sigma_{FS} = C_{EXP} \cup C_{FE\_LANG} \cup C_{FE\_FW} \cup C_{BE\_LANG} \cup C_{BE\_FW} \cup C_{API} \cup C_{DB\_SQL} \cup C_{DB\_NOSQL} \cup C_{DEVOPS} \cup C_{VCS}$$
 
 #### 3. Estado Inicial:
 $$q_0$$
 
 #### 4. Conjunto de Estados de Aceptación:
-$$F_{FS} = \{q_{acc}\}$$
+$$F_{FS} = \{q_{version\_control}\}$$
 
 #### 5. Función de Transición $\delta_{FS} : Q_{FS} \times \Sigma_{FS} \to Q_{FS}$:
 
-| Estado Actual ($q$) | Entrada $s \in C_{FE}$ | Entrada $s \in C_{BE}$ | Entrada $s \in C_{DB}$ | Entrada $s \in C_{VCS}$ |
-|---|---|---|---|---|
-| **$q_0$** | $q_{fe}$ | $q_{trap}$ | $q_{trap}$ | $q_{trap}$ |
-| **$q_{fe}$** | $q_{fe}$ *(self-loop)* | $q_{be}$ *(avance)* | $q_{trap}$ | $q_{trap}$ |
-| **$q_{be}$** | $q_{trap}$ | $q_{be}$ *(self-loop)* | $q_{db}$ *(avance)* | $q_{trap}$ |
-| **$q_{db}$** | $q_{trap}$ | $q_{trap}$ | $q_{db}$ *(self-loop)* | $q_{acc}$ *(avance)* |
-| **$q_{acc}$ (Aceptador)** | $q_{trap}$ | $q_{trap}$ | $q_{trap}$ | $q_{acc}$ *(self-loop)* |
-| **$q_{trap}$** | $q_{trap}$ | $q_{trap}$ | $q_{trap}$ | $q_{trap}$ |
+El autómata admite entrada directa desde $q_0$ por rango de experiencia $C_{EXP} \to q_{experience}$ o directamente por lenguaje frontend $C_{FE\_LANG} \to q_{fe\_language}$. Asimismo, cuenta con caminos deterministas de bypass para perfiles sin framework explícito (por ejemplo, avanzar de $q_{fe\_language}$ a $q_{be\_language}$ o $q_{be\_framework}$), manteniendo determinismo estricto gracias a la disyunción mutua entre los subconjuntos del alfabeto:
+
+| Estado Actual ($q$) | Entrada $s \in C$ | Estado Siguiente ($\delta$) | Tipo de Transición |
+|---|---|---|---|
+| **$q_0$** | $s \in C_{EXP}$ | $q_{experience}$ | Avance por años de experiencia ($\backslash d$) |
+| **$q_0$** | $s \in C_{FE\_LANG}$ | $q_{fe\_language}$ | Entrada directa frontend |
+| **$q_{experience}$** | $s \in C_{EXP}$ | $q_{experience}$ | Self-loop (múltiples registros numéricos) |
+| **$q_{experience}$** | $s \in C_{FE\_LANG}$ | $q_{fe\_language}$ | Avance a Frontend Language |
+| **$q_{fe\_language}$** | $s \in C_{FE\_LANG}$ | $q_{fe\_language}$ | Self-loop |
+| **$q_{fe\_language}$** | $s \in C_{FE\_FW}$ | $q_{fe\_framework}$ | Avance a Frontend Framework |
+| **$q_{fe\_language}$** | $s \in C_{BE\_LANG} \cup C_{BE\_FW}$ | $q_{be\_language} \text{ / } q_{be\_framework}$ | Bypass hacia Backend |
+| **$q_{fe\_framework}$** | $s \in C_{FE\_FW}$ | $q_{fe\_framework}$ | Self-loop |
+| **$q_{fe\_framework}$** | $s \in C_{BE\_LANG} \cup C_{BE\_FW}$ | $q_{be\_language} \text{ / } q_{be\_framework}$ | Avance hacia Backend |
+| **$q_{be\_language}$** | $s \in C_{BE\_LANG}$ | $q_{be\_language}$ | Self-loop |
+| **$q_{be\_language}$** | $s \in C_{BE\_FW}$ | $q_{be\_framework}$ | Avance a Backend Framework |
+| **$q_{be\_language}$** | $s \in C_{API}$ | $q_{api\_communication}$ | Avance a API Communication |
+| **$q_{be\_language}$** | $s \in C_{DB\_SQL} \cup C_{DB\_NOSQL}$ | $q_{database\_sql} \text{ / } q_{database\_nosql}$ | Bypass hacia Base de Datos |
+| **$q_{be\_framework}$** | $s \in C_{BE\_FW}$ | $q_{be\_framework}$ | Self-loop |
+| **$q_{be\_framework}$** | $s \in C_{API}$ | $q_{api\_communication}$ | Avance a API Communication |
+| **$q_{be\_framework}$** | $s \in C_{DB\_SQL} \cup C_{DB\_NOSQL}$ | $q_{database\_sql} \text{ / } q_{database\_nosql}$ | Avance hacia Base de Datos |
+| **$q_{api\_communication}$** | $s \in C_{API}$ | $q_{api\_communication}$ | Self-loop |
+| **$q_{api\_communication}$** | $s \in C_{DB\_SQL} \cup C_{DB\_NOSQL}$ | $q_{database\_sql} \text{ / } q_{database\_nosql}$ | Avance hacia Base de Datos |
+| **$q_{database\_sql}$** | $s \in C_{DB\_SQL}$ | $q_{database\_sql}$ | Self-loop |
+| **$q_{database\_sql}$** | $s \in C_{DB\_NOSQL}$ | $q_{database\_nosql}$ | Avance a NoSQL |
+| **$q_{database\_sql}$** | $s \in C_{DEVOPS}$ | $q_{devops\_cloud}$ | Avance a DevOps/Cloud |
+| **$q_{database\_sql}$** | $s \in C_{VCS}$ | $q_{version\_control}$ | Bypass a VCS |
+| **$q_{database\_nosql}$** | $s \in C_{DB\_NOSQL}$ | $q_{database\_nosql}$ | Self-loop |
+| **$q_{database\_nosql}$** | $s \in C_{DEVOPS}$ | $q_{devops\_cloud}$ | Avance a DevOps/Cloud |
+| **$q_{database\_nosql}$** | $s \in C_{VCS}$ | $q_{version\_control}$ | Bypass a VCS |
+| **$q_{devops\_cloud}$** | $s \in C_{DEVOPS}$ | $q_{devops\_cloud}$ | Self-loop |
+| **$q_{devops\_cloud}$** | $s \in C_{VCS}$ | $q_{version\_control}$ | Avance a VCS |
+| **$q_{version\_control}$** | $s \in C_{VCS}$ | $q_{version\_control}$ | Self-loop (Aceptador) |
+| **Cualquier otro par $(q, s)$** | $s \in \Sigma_{FS}$ fuera de orden o $s \notin \Sigma_{FS}$ | $q_{trap}$ | Violación de secuencia $\to$ Trampa |
+| **$q_{trap}$** | $\forall s \in \Sigma_{FS}$ | $q_{trap}$ | Estado sumidero / no recuperable |
+
+> **Nota sobre Representación Gráfica (Graphviz):** En el diagrama interactivo renderizado por `visualizer.py` y Graphviz, cada símbolo individual posee su propia arista/flecha independiente (e.g. aristas separadas para `REACT`, `ANGULAR`, `VUE`, `SPRING_BOOT`), con la excepción explícita del rango numérico de experiencia laboral ($\backslash d \in 1..9$), el cual se colapsa en una sola arista `\d (1..9 años exp)` para mantener legibilidad visual.
 
 #### Diagrama de Transición ($\mathcal{M}_{FS}$):
-*(Diagrama de transición a incorporar mediante Excalidraw o elaboración manual).*
+
+![Diagrama de Transición Full Stack Developer](diagrams/full_stack.png)
+
+> **Interpretación:** Cada competencia técnica individual (`HTML`, `JAVASCRIPT`, `TYPESCRIPT`, `CSS`, `REACT`, `ANGULAR`, `VUE`, `NEXTJS`, `SVELTE`, `NODE_JS`, `PYTHON`, `JAVA`, `SPRING_BOOT`, `EXPRESS`, `DJANGO`, `REST`, `GRAPHQL`, `POSTGRESQL`, `MYSQL`, `MONGODB`, `REDIS`, `DOCKER`, `AWS`, `GIT`, etc.) posee su propia arista dirigida individual. La única excepción es el rango numérico de años de experiencia $\backslash d \in \{1..9\}$, el cual se agrupa visualmente en una sola arista `\d (1..9 años exp)` para mantener legibilidad.
 
 ---
 
@@ -129,7 +173,10 @@ $$F_{ML} = \{q_{acc}\}$$
 | **$q_{trap}$** | $q_{trap}$ | $q_{trap}$ | $q_{trap}$ | $q_{trap}$ | $q_{trap}$ |
 
 #### Diagrama de Transición ($\mathcal{M}_{ML}$):
-*(Diagrama de transición a incorporar mediante Excalidraw o elaboración manual).*
+
+![Diagrama de Transición Machine Learning Engineer](diagrams/machine_learning.png)
+
+> **Interpretación:** Cada símbolo (`PYTHON`, `R`, `JULIA`, `PANDAS`, `NUMPY`, `SCIPY`, `SCIKIT_LEARN`, `TENSORFLOW`, `PYTORCH`, `SQL`, `GIT`, etc.) tiene su propia arista individual de avance y de self-loop, coincidiendo con la especificación de la cátedra.
 
 ---
 
@@ -177,7 +224,10 @@ $$F_{DEVOPS} = \{q_{acc}\}$$
 | **$q_{trap}$** | $q_{trap}$ | $q_{trap}$ | $q_{trap}$ | $q_{trap}$ | $q_{trap}$ |
 
 #### Diagrama de Transición ($\mathcal{M}_{DEVOPS}$):
-*(Diagrama de transición a incorporar mediante Excalidraw o elaboración manual).*
+
+![Diagrama de Transición Cloud & DevOps Engineer](diagrams/cloud_devops.png)
+
+> **Interpretación:** Una arista dedicada por cada tecnología (`BASH`, `LINUX`, `PYTHON`, `DOCKER`, `KUBERNETES`, `AWS`, `AZURE`, `TERRAFORM`, `GIT`, etc.).
 
 ---
 
@@ -225,7 +275,10 @@ $$F_{DS} = \{q_{acc}\}$$
 | **$q_{trap}$** | $q_{trap}$ | $q_{trap}$ | $q_{trap}$ | $q_{trap}$ | $q_{trap}$ |
 
 #### Diagrama de Transición ($\mathcal{M}_{DS}$):
-*(Diagrama de transición a incorporar mediante Excalidraw o elaboración manual).*
+
+![Diagrama de Transición Data Scientist](diagrams/data_scientist.png)
+
+> **Interpretación:** Modelado secuencial estricto con aristas individuales por cada biblioteca estadística y de visualización.
 
 ---
 
