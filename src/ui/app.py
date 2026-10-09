@@ -17,9 +17,13 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 import streamlit as st
+import graphviz
+from src.stage1_regex import extract_qualifications
+from src.stage2_fst import normalize_and_sort
 from src.stage3_classifier.automata_models import build_all_automata
 from src.stage3_classifier.classifier import ResumeClassifier, ClassificationStatus
 from src.stage3_classifier.profiles import PROFILES_REGISTRY
+from src.stage3_classifier.visualizer import build_graphviz_diagram
 
 # ============================================================================
 # Page Configuration
@@ -95,6 +99,9 @@ SAMPLE_RESUMES = {
     "Wednesday Addams (Full Stack - Aceptado)": [
         "JAVASCRIPT", "REACT", "NODE_JS", "POSTGRESQL", "GIT"
     ],
+    "Wednesday Addams (Full Stack - Con 3 años exp)": [
+        "3", "JAVASCRIPT", "REACT", "NODE_JS", "POSTGRESQL", "GIT"
+    ],
     "Mary Jane Watson (Machine Learning - Aceptado)": [
         "PYTHON", "PANDAS", "NUMPY", "SCIKIT_LEARN", "TENSORFLOW", "SQL", "GIT"
     ],
@@ -113,6 +120,28 @@ SAMPLE_RESUMES = {
     "Candidato Mixto Incompatible (Rechazado - Token foráneo)": [
         "JAVASCRIPT", "NODE_JS", "SCIKIT_LEARN", "GIT"
     ],
+}
+
+SAMPLE_RAW_CVS = {
+    "Wednesday Addams (Full Stack - Enunciado)": (
+        "Wednesday Addams 3 years of experience developing web applications. "
+        "Technical Skills: JS, React.js, NodeJS, Postgres, Git."
+    ),
+    "Mary Jane Watson (Machine Learning - Enunciado)": (
+        "Mary Jane Watson 2 years of experience developing predictive models and data-processing pipelines. "
+        "Technical Skills: Python, Pandas, NumPy, Scikit-learn, TensorFlow, SQL, Git."
+    ),
+    "Alex Murphy (Cloud & DevOps)": (
+        "Alex Murphy 4 years of infrastructure engineering. "
+        "Technical Skills: Bash, Linux, GitHub Actions, Docker, Kubernetes, AWS, Terraform, Git."
+    ),
+    "Ada Lovelace (Data Scientist)": (
+        "Ada Lovelace 3 years of data analysis and machine learning. "
+        "Technical Skills: Python, Pandas, NumPy, Seaborn, Plotly, Scikit-learn, Git."
+    ),
+    "Candidato Sin Normalizar (Prueba de Rechazo si se salta Etapa 2)": (
+        "Junior Web Developer. Technical Skills: JS, React.js, Postgres."
+    ),
 }
 
 # ============================================================================
@@ -163,35 +192,109 @@ tab_eval, tab_formal, tab_tests, tab_about = st.tabs([
 # Tab 1: Live Candidate Screening
 # ============================================================================
 with tab_eval:
-    st.subheader("1. Selección o Ingreso de Tokens Normalizados")
-    col_input_mode, col_tokens = st.columns([1, 2])
+    eval_mode = st.radio(
+        "Modo de Evaluación:",
+        [
+            "🔗 Pipeline Completo End-to-End (CV Texto Crudo ➔ Etapa 1 Regex ➔ Etapa 2 FST ➔ Etapa 3 DFA)",
+            "🎯 Modo Directo (Tokens de Entrada para Etapa 3)",
+        ],
+        horizontal=True,
+    )
 
-    with col_input_mode:
-        selected_sample = st.selectbox(
-            "Cargar Ejemplo Preconfigurado:",
-            ["(Personalizado)"] + list(SAMPLE_RESUMES.keys()),
+    if "Pipeline Completo" in eval_mode:
+        st.subheader("1. Procesamiento End-to-End desde Texto de Currículum")
+        col_cv_preset, col_profile_target = st.columns([2, 1])
+        with col_cv_preset:
+            selected_raw_cv = st.selectbox(
+                "Cargar Currículum de Prueba:",
+                list(SAMPLE_RAW_CVS.keys()),
+            )
+        with col_profile_target:
+            target_profile_pipeline = st.selectbox(
+                "Perfil Objetivo para Orden Canónico:",
+                list(PROFILES_REGISTRY.keys()),
+                format_func=lambda x: PROFILES_REGISTRY[x].title,
+            )
+
+        cv_input_text = st.text_area(
+            "Texto del Currículum Vitae (Lenguaje Natural):",
+            value=SAMPLE_RAW_CVS[selected_raw_cv],
+            height=90,
         )
 
-        if selected_sample != "(Personalizado)":
-            default_token_str = ", ".join(SAMPLE_RESUMES[selected_sample])
+        # Checkbox to demonstrate why Stage 3 REQUIRES Stage 2
+        skip_stage2 = st.checkbox(
+            "⚠️ Demostración: Omitir Etapa 2 (Enviar tokens crudos sin normalizar directamente al Autómata)",
+            value=False,
+            help="Al activar esta casilla, los tokens crudos como 'JS' o 'React.js' entrarán directamente a tu autómata, provocando un rechazo inmediato hacia q_trap porque no pertenecen al alfabeto formal Sigma.",
+        )
+
+        # Stage 1: Extraction
+        extraction = extract_qualifications(cv_input_text)
+        
+        # Stage 2: Normalization & Canonical Sorting
+        normalization = normalize_and_sort(extraction.raw_tokens, profile_id=target_profile_pipeline)
+
+        if skip_stage2:
+            cleaned_tokens = extraction.raw_tokens
         else:
-            default_token_str = "JAVASCRIPT, REACT, NODE_JS, POSTGRESQL, GIT"
+            cleaned_tokens = normalization.normalized_tokens
 
-    with col_tokens:
-        input_text = st.text_area(
-            "Secuencia de Tokens Normalizados (separados por coma o espacio):",
-            value=default_token_str,
-            help="Ingresa tokens en mayúscula según el orden canónico generado en la Etapa 2.",
-            height=100,
-        )
+        # Visual Pipeline Cards
+        pipe_c1, pipe_c2, pipe_c3 = st.columns(3)
+        with pipe_c1:
+            st.markdown("##### 📌 Etapa 1: Extracción (Regex)")
+            st.caption("A cargo de Integrante 1 (Patrones en texto)")
+            st.code(f"Tokens crudos:\n{extraction.raw_tokens}", language="python")
+            if extraction.years_of_experience:
+                st.caption(f"Experiencia detectada: {extraction.years_of_experience} años")
 
-    # Clean and split tokens
-    raw_tokens = [t.strip().upper() for t in input_text.replace("\n", " ").split(",") if t.strip()]
-    cleaned_tokens: list[str] = []
-    for chunk in raw_tokens:
-        cleaned_tokens.extend([t for t in chunk.split() if t])
+        with pipe_c2:
+            st.markdown("##### 🔄 Etapa 2: Normalización (FST)")
+            st.caption("A cargo de Integrante 1 (Transductores)")
+            if skip_stage2:
+                st.warning("⚠️ OMITIDA: Los tokens no fueron normalizados ni ordenados.")
+            else:
+                st.code(f"Tokens ordenados canónicamente:\n{normalization.normalized_tokens}", language="python")
+                if normalization.transformations_applied:
+                    st.caption(f"Transducciones: {normalization.transformations_applied}")
 
-    st.write(f"**Tokens a evaluar ({len(cleaned_tokens)}):** `{cleaned_tokens}`")
+        with pipe_c3:
+            st.markdown("##### 🎯 Etapa 3: Autómata DFA")
+            st.caption("A cargo de Integrante 2 (Tu rol - pyformlang)")
+            st.code(f"Secuencia evaluada:\n{cleaned_tokens}", language="python")
+
+    else:
+        st.subheader("1. Selección o Ingreso Directo de Tokens Normalizados")
+        col_input_mode, col_tokens = st.columns([1, 2])
+
+        with col_input_mode:
+            selected_sample = st.selectbox(
+                "Cargar Ejemplo Preconfigurado:",
+                ["(Personalizado)"] + list(SAMPLE_RESUMES.keys()),
+            )
+
+            if selected_sample != "(Personalizado)":
+                default_token_str = ", ".join(SAMPLE_RESUMES[selected_sample])
+            else:
+                default_token_str = "JAVASCRIPT, REACT, NODE_JS, POSTGRESQL, GIT"
+
+        with col_tokens:
+            input_text = st.text_area(
+                "Secuencia de Tokens Normalizados (separados por coma o espacio):",
+                value=default_token_str,
+                help="Ingresa tokens en mayúscula según el orden canónico generado en la Etapa 2.",
+                height=100,
+            )
+
+        # Clean and split tokens
+        raw_tokens = [t.strip().upper() for t in input_text.replace("\n", " ").split(",") if t.strip()]
+        cleaned_tokens: list[str] = []
+        for chunk in raw_tokens:
+            cleaned_tokens.extend([t for t in chunk.split() if t])
+
+        st.write(f"**Tokens a evaluar ({len(cleaned_tokens)}):** `{cleaned_tokens}`")
+
     st.divider()
 
     # Classification Report
@@ -242,27 +345,35 @@ with tab_eval:
     with col_stat3:
         st.metric("Estado de Aceptación Esperado", inspected_result.expected_final_state)
 
-    st.markdown("##### Tabla de Ejecución Paso a Paso")
-    if inspected_result.trace:
-        trace_data = [
-            {
-                "Paso": step.step_number,
-                "Estado Origen": step.source_state,
-                "Token Consumido": step.symbol,
-                "Estado Destino": step.target_state,
-                "Categoría": step.category or "N/A",
-                "¿Transición Válida?": "✅ Válida" if step.is_valid_transition else "❌ Violación (q_trap)",
-            }
-            for step in inspected_result.trace
-        ]
-        st.dataframe(trace_data, hide_index=True)
-    else:
-        st.warning("No se procesaron tokens (secuencia vacía).")
+    col_chart, col_trace = st.columns([1.3, 1])
+    with col_chart:
+        st.markdown("##### Diagrama de Transición Interactivo (Graphviz)")
+        st.caption("Verde = Ruta activa del candidato | Azul = Estados del DFA | Rojo = Estado trampa q_trap")
+        chart_digraph = build_graphviz_diagram(inspected_auto, inspected_result)
+        st.graphviz_chart(chart_digraph)
+
+    with col_trace:
+        st.markdown("##### Tabla de Ejecución Paso a Paso")
+        if inspected_result.trace:
+            trace_data = [
+                {
+                    "Paso": step.step_number,
+                    "Estado Origen": step.source_state,
+                    "Token Consumido": step.symbol,
+                    "Estado Destino": step.target_state,
+                    "Categoría": step.category or "N/A",
+                    "¿Transición Válida?": "✅ Válida" if step.is_valid_transition else "❌ Violación (q_trap)",
+                }
+                for step in inspected_result.trace
+            ]
+            st.dataframe(trace_data, hide_index=True)
+        else:
+            st.warning("No se procesaron tokens (secuencia vacía).")
 
     # Optional Excalidraw diagram viewer
     diagram_path = PROJECT_ROOT / "docs" / "diagrams" / f"{selected_inspect_pid}.png"
     if diagram_path.exists():
-        st.markdown("##### Diagrama de Transición del Autómata (Excalidraw / Manual)")
+        st.markdown("##### Diagrama Manual Adjunto (Excalidraw)")
         st.image(str(diagram_path), caption=f"Diagrama de {inspected_auto.profile.title}")
 
 
@@ -290,7 +401,7 @@ with tab_formal:
     f_def = f_auto.profile
     f_tuple = f_auto.get_formal_tuple()
 
-    c1, c2 = st.columns([1, 1])
+    c1, c2 = st.columns([1, 1.2])
 
     with c1:
         st.markdown(f"### {f_def.title}")
@@ -301,7 +412,8 @@ with tab_formal:
         )
 
         st.markdown("#### 1. Conjunto de Estados ($Q$)")
-        st.write(f"`{f_tuple.states}`")
+        st.write(f"Total estados: **{len(f_tuple.states)}**")
+        st.write(f"`{sorted(list(f_tuple.states))}`")
 
         st.markdown("#### 2. Alfabeto de Entrada ($\\Sigma$)")
         st.write(f"Contiene **{len(f_tuple.alphabet)}** símbolos terminales:")
@@ -312,15 +424,14 @@ with tab_formal:
         st.write(f"- **Estados de Aceptación $F$:** `{f_tuple.final_states}`")
 
     with c2:
-        st.markdown("#### 4. Diagrama del Autómata (Excalidraw / Dibujo Manual)")
+        st.markdown("#### 4. Diagrama del Autómata (Graphviz)")
+        formal_digraph = build_graphviz_diagram(f_auto, None)
+        st.graphviz_chart(formal_digraph)
+
         diag_file = PROJECT_ROOT / "docs" / "diagrams" / f"{selected_formal_pid}.png"
         if diag_file.exists():
+            st.markdown("#### Diagrama Manual (Excalidraw)")
             st.image(str(diag_file), caption=f"Diagrama Excalidraw - {f_def.title}")
-        else:
-            st.info(
-                f"📌 Puedes colocar la imagen de tu diagrama de Excalidraw o dibujo a mano en:\n"
-                f"`docs/diagrams/{selected_formal_pid}.png` para visualizarlo directamente aquí."
-            )
 
     st.divider()
     st.markdown("#### 5. Tabla de Transiciones Formales $\\delta(q, s)$")
