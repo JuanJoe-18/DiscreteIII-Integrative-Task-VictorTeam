@@ -90,6 +90,22 @@ La interfaz se abrirá en `http://localhost:8501`, permitiendo:
 - Inspeccionar las 5-tuplas formales y diagramas Mermaid/Graphviz.
 - Ejecutar la suite de pruebas unitarias desde la propia interfaz web.
 
+### 5. Lanzar la nueva interfaz React (diseño de Figma Make)
+
+La interfaz conserva el diseño inspirado en LinkedIn y se conecta al motor Python real.
+Desde la raíz del repositorio, con Node.js y pnpm instalados:
+
+```powershell
+pnpm --dir frontend install --frozen-lockfile
+pnpm --dir frontend build
+python -m src.web_api.server
+```
+
+Abrir `http://127.0.0.1:8000`. Incluye evaluación de currículos y tokens,
+resultados por perfil, recorrido de estados, diagramas y tablas formales.
+Los perfiles y transiciones provienen de `pyformlang`, sin una clasificación simulada
+en el navegador. Más información en [`frontend/README.md`](frontend/README.md).
+
 ---
 
 ##  Formalización Matemática (Resumen de la 5-Tupla)

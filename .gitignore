@@ -16,3 +16,7 @@ ENV/
 
 # Streamlit
 .streamlit/
+
+# React frontend
+frontend/node_modules/
+frontend/dist/
