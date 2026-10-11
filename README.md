@@ -1,7 +1,6 @@
 # ResumeLens — Formal Language-Based Resume Screening
 > **Estructuras Discretas III (2026) — Tarea Integradora**  
 > **Equipo:** Víctor Team  
-> **Integrante 2 (Motor de Lógica):** Etapa 3 (Reconocimiento de Patrones con Autómatas) y Frontend
 
 ---
 
@@ -14,12 +13,16 @@
 3. **Etapa 3 — Reconocimiento de Patrones de Cualificación:** Autómatas Finitos Deterministas (DFA) implementados con `pyformlang`.
 4. **Etapa 4 — Lenguaje de Especificación del Candidato:** Gramáticas Libres de Contexto (CFG) con `textX` y visualización HTML.
 
-**Estado actual:** las etapas 1, 2 y 3 implementan extracción con `re`, normalización
-y ordenamiento con FST reales, y cuatro DFA en `pyformlang`. La API React reutiliza
-estos módulos. La Etapa 4 ya incluye una DSL con gramática textX, validación de
-sintaxis y restricciones de dominio, un modelo estructurado y ejemplos ejecutables.
-Su conexión al pipeline y la generación de HTML/Markdown siguen pendientes.
+**Estado actual:** las cuatro etapas están integradas mediante `src/pipeline.py`.
+React y Streamlit ejecutan extracción con `re`, normalización y ordenamiento con
+FST reales, cuatro DFA en `pyformlang` y generación de una DSL que textX valida
+antes de producir HTML. React permite editar, validar y descargar el documento;
+Streamlit muestra y descarga el resultado del pipeline.
 Consulta [la gramática, sus decisiones y pruebas](docs/stage4_grammar.md).
+
+La extracción conserva menciones de cargos y formación; no asocia automáticamente
+empleadores, instituciones o fechas. Esos detalles pueden completarse en la DSL.
+Validar una DSL editada no vuelve a ejecutar los DFA ni certifica datos personales.
 
 ---
 
@@ -51,6 +54,8 @@ DiscreteIII-Integrative-Task-VictorTeam/
 │   │   ├── classifier.py              # Motor de evaluación y trazabilidad
 │   │   └── visualizer.py              # Generador de grafos (Mermaid y Graphviz)
 │   ├── stage4_grammar/                # Etapa 4: DSL y CFG con textX
+│   ├── pipeline.py                    # Orquestación compartida de las cuatro etapas
+│   ├── web_api/                       # API y servidor local de React
 │   └── ui/                            # Frontend Interactivo
 │       └── app.py                     # Aplicación Web Streamlit
 ├── tests/
@@ -72,8 +77,14 @@ cd DiscreteIII-Integrative-Task-VictorTeam
 
 ### 2. Instalar dependencias
 ```bash
-pip install -r requirements.txt
+python -m venv .venv
+# Windows PowerShell (sin necesidad de activar el entorno):
+.venv/Scripts/python -m pip install -r requirements.txt
 ```
+
+En los comandos siguientes usa `.venv/Scripts/python` en Windows o activa el
+entorno antes de ejecutar `python`. En Linux/macOS el ejecutable está en
+`.venv/bin/python`. Las verificaciones de entrega usaron Python 3.12.
 
 ### 3. Ejecutar las pruebas unitarias
 ```bash
@@ -84,11 +95,13 @@ Para validar un perfil escrito en la DSL de la etapa 4:
 
 ```bash
 python -m src.stage4_grammar docs/examples/wednesday.resume
+python -m src.stage4_grammar docs/examples/wednesday.resume --html candidate.html
 ```
 
 Si el documento es válido, imprime sus datos estructurados como JSON. En caso de
 error devuelve un código de salida distinto de cero y señala la línea y columna.
 `docs/examples/invalid_candidate.resume` permite demostrar un rechazo sintáctico.
+La opción `--html` no crea ni sobrescribe la salida cuando la DSL es inválida.
 
 ### 4. Lanzar la Interfaz Web (Streamlit)
 ```bash
@@ -114,6 +127,7 @@ python -m src.web_api.server
 
 Abrir `http://127.0.0.1:8000`. Incluye evaluación de currículos y tokens,
 resultados por perfil, recorrido de estados, diagramas y tablas formales.
+El resultado incluye una DSL editable y un perfil HTML validado descargable.
 Los perfiles y transiciones provienen de `pyformlang`, sin una clasificación simulada
 en el navegador. Más información en [`frontend/README.md`](frontend/README.md).
 
@@ -153,3 +167,14 @@ python scripts/export_diagrams.py
 
 La formalización incluye la verificación de cada requisito del punto 3 frente
 al enunciado disponible en `docs/Initial Doc.md`. El exportador de imágenes requiere conexión.
+
+## Documentación y entrega
+
+- [Arquitectura, contratos y decisiones](docs/architecture.md).
+- [Revisión de literatura y fuentes primarias](docs/literature_review.md).
+- [Diseño y evidencia de pruebas de la etapa 4](docs/stage4_tests.md).
+- [Verificación de requisitos y límites](docs/delivery_checklist.md).
+- [Póster de investigación (PDF)](output/pdf/resumelens-poster.pdf).
+
+Los ejemplos son ficticios. El sistema verifica patrones sobre habilidades
+reportadas; no mide competencia real, precisión de contratación ni idoneidad laboral.

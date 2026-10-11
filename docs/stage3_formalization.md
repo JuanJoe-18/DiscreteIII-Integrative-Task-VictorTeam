@@ -942,3 +942,28 @@ Moore's algorithm separates the 7 states into singleton classes after 6 refineme
 
 In Graphviz, "other symbols of Σ" groups the exact complement of the solid edges of the state. Mermaid contains one explicit transition for every pair of δ.
 
+---
+
+## Verification against assignment item 3
+
+| Requirement | Evidence |
+|---|---|
+| Four profiles with one general solution | Common registry and shared construction/evaluation; Full Stack, ML, DevOps and Data Scientist |
+| Complete Q, Σ, δ, q0 and F per automaton | Sections above and `get_formal_tuple()`; total table generated from the DFA |
+| Explain and justify DFA/NFA/ε-NFA | Determinism, totality and absence of ε: Theorem 2; language of each automaton: Theorem 1; minimality: Theorem 4 |
+| Transition diagram | DOT/SVG/PNG and Mermaid derived from the model |
+| Correctness of the integration (filtering and sorting before the DFA) | Theorem 5 and the tests that verify it |
+| Explain the professional pattern | Regular expression and minimum requirements in each section; plain-language explanation in Part I (section 5) |
+| Implement with pyformlang | `ProfileAutomaton.dfa` is a `DeterministicFiniteAutomaton` |
+| Test cases and scenarios | `stage3_tests.md`; `tests/test_stage3.py` (section 8: scenarios), `test_stage3_regressions.py` and `test_pipeline_contract.py` |
+| Module design (functions, inputs and outputs) | Part I of this document (sections 2–4) |
+
+The assignment presents technologies as examples and asks the team to define the patterns. For that reason Full Stack accepts a backend by language/runtime or by framework, SQL or NoSQL, and makes the frontend framework, APIs and deployment optional. ML requires one skill from the ML_FRAMEWORKS group, without requiring Scikit-learn and a deep-learning framework at the same time. These are explicit team decisions, not additional textual requirements of the instructor.
+
+The assignment mentions detailed requirements that would be provided separately. This verification is based on `docs/Initial Doc.md`; it must also be checked against any instructor annex that is not in the repository.
+
+All four stages are integrated: extraction with re, normalization and ordering with pyformlang FSTs, DFA recognition, and a textX-validated DSL before HTML generation. The delivery matrix in `delivery_checklist.md` links the poster and literature review, and identifies pending external checks and oral-presentation requirements. Stages 1 and 2 are documented in `stage1_regex.md` and `stage2_fst.md`.
+
+The test-case and scenario design of this stage is in [`stage3_tests.md`](stage3_tests.md).
+
+Run `python -m pytest -q` to verify the scenarios. The regressions cover simultaneous classification, strict evaluation, optional categories, years 0/3/10/25, totality of δ, diagrams, omission of each requirement and the 1024 presence combinations of the ten Full Stack categories.

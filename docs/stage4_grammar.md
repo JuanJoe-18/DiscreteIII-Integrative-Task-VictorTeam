@@ -6,10 +6,10 @@ Stage 4 represents candidate information in a domain-specific language (DSL).
 The grammar describes the structure of the information; Stage 3 remains responsible
 for deciding which qualification patterns the candidate satisfies.
 
-This increment implements the grammar, textX parser, domain checks, immutable
-output records, a validation command, and valid/invalid examples. Automatic DSL
-generation from Stages 1-3 and HTML/Markdown rendering are subsequent increments.
-The validation command's JSON is an inspection aid, not the final visualization.
+The implementation includes the grammar, textX parser, domain checks, immutable
+records, deterministic generation from Stages 1–3 and validated HTML rendering.
+It is integrated into the web API, React and Streamlit. The command-line JSON is
+an inspection aid; the optional HTML file is the final standalone visualization.
 
 ## 2. Module design and contracts
 
@@ -18,6 +18,8 @@ The validation command's JSON is an inspection aid, not the final visualization.
 | `src/stage4_grammar/candidate.tx` | Executable syntax | DSL source | textX object graph |
 | `src/stage4_grammar/parser.py` | Parsing, domain checks, conversion | Complete source string or UTF-8 file | `CandidateProfile` or `ProfileValidationError` |
 | `src/stage4_grammar/models.py` | Structured candidate records | Parsed values | Frozen Python dataclasses |
+| `src/stage4_grammar/generator.py` | Adapt facts and serialize | Stage results / immutable model | Validated DSL |
+| `src/stage4_grammar/renderer.py` | Validate then render | Complete DSL | Escaped HTML and parsed profile |
 | `src/stage4_grammar/__main__.py` | Command-line validation | `.resume` path | JSON and exit 0, or error and exit 1 |
 
 Public Python API:
@@ -147,8 +149,8 @@ The entire input must be consumed, including the rejection of trailing text.
 6. **No new qualification decisions.** `accepted full_stack;` records a Stage 3
    result. An empty classification section represents no accepted profiles.
    Successful DSL validation proves neither that a declaration is true nor that
-   the candidate meets the pattern. The future pipeline adapter must copy actual
-   Stage 3 results; it must not invent accepted profiles from the DSL.
+   the candidate meets the pattern. The pipeline adapter copies actual Stage 3
+   results and never invents accepted profiles from the DSL.
 
 After syntax recognition, textX model processors enforce these domain checks:
 
@@ -161,7 +163,8 @@ After syntax recognition, textX model processors enforce these domain checks:
 
 These checks are semantic constraints and are **not** part of the CFG's syntax.
 Periods remain descriptive text; no date arithmetic is attempted. Text fields
-may contain HTML characters; the later renderer must escape them before display.
+may contain HTML characters; the renderer escapes every value before display.
+Unpaired Unicode surrogates are rejected, preventing invalid UTF-8 output.
 
 ## 6. Validation and examples
 
@@ -198,7 +201,42 @@ Tests are in `tests/test_stage4_grammar.py`.
 | Error diagnostics / CLI | Preserve location and nonzero failure status; no traceback for missing files |
 | Separation from Stage 3 | Parsing a declaration never recomputes or certifies qualification acceptance |
 
-## 8. References
+## 8. Generation and validated visualization
+
+`candidate_from_results` maps extracted facts and normalization traces to the
+immutable model. Titles and qualifications become repeated partial records;
+employers, dates and institutions remain absent because the extractor cannot
+reliably associate them. Total years are kept once, including explicit zero.
+The adapter removes duplicate set entries in stable order and preserves the
+original spelling of unknown skills. `EXPERIENCE_PRESENT` is not emitted as a skill.
+
+`serialize_profile` emits deterministic DSL. Free text uses JSON escaping; symbol
+fields are checked before interpolation to prevent DSL injection. Parsing the
+serialized text must reproduce exactly the same model. Invalid model values fail
+instead of producing a partially valid document.
+
+`validate_document` parses the complete input and applies domain checks **before**
+calling the HTML renderer. `generate_document` combines serialization and this
+validation. The HTML is self-contained, responsive and printable, has no scripts
+or remote resources, and escapes personal text, experience, education and skills.
+The CLI writes HTML only on success:
+
+```bash
+python -m src.stage4_grammar docs/examples/wednesday.resume --html candidate.html
+```
+
+The shared `process_resume` function runs all four stages. The web API includes
+the generated document in resume evaluations. Its `/api/validate-profile` route
+also checks manually edited DSL. This latter operation validates declarations;
+it does not prove that declared accepted profiles follow from the listed skills.
+React removes stale previews immediately on edit and discards responses for an
+older revision. Streamlit offers the same generated DSL and HTML for download.
+
+The fixed-order syntax has bounded nesting. The CFG notation is useful for
+structural composition; this design does not claim that arbitrary recursive
+nesting is supported or that its syntactic language is necessarily nonregular.
+
+## 9. References
 
 - Course assignment, *Integrative Task 1 (2026-2)*, Stage 4: EBNF, textX,
   validation and visualization; reproduced in `docs/Initial Doc.md`.

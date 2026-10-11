@@ -110,10 +110,11 @@ def export_formalization():
         'The assignment mentions detailed requirements that would be provided separately. '
         'This verification is based on `docs/Initial Doc.md`; it must also be checked against any '
         'instructor annex that is not in the repository.', '',
-        'Conformance to item 3 does not mean the whole project is finished: Stage 4 '
-        '(textX DSL), the poster, the literature review, the AI-usage log and the presentation '
-        'are independent deliverables. Stages 1 and 2 are documented in `stage1_regex.md` and '
-        '`stage2_fst.md`.', '',
+        'All four stages are integrated: extraction with re, normalization and ordering with '
+        'pyformlang FSTs, DFA recognition, and a textX-validated DSL before HTML generation. '
+        'The delivery matrix in `delivery_checklist.md` links the poster and literature review, '
+        'and identifies pending external checks and oral-presentation requirements. '
+        'Stages 1 and 2 are documented in `stage1_regex.md` and `stage2_fst.md`.', '',
         'The test-case and scenario design of this stage is in [`stage3_tests.md`](stage3_tests.md).', '',
         'Run `python -m pytest -q` to verify the scenarios. The regressions cover '
         'simultaneous classification, strict evaluation, optional categories, years 0/3/10/25, '

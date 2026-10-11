@@ -45,9 +45,15 @@ Para desarrollo con otro puerto, actualizar también el proxy en `vite.config.ts
 - La normalización y el orden por perfil ejecutan los FST de la etapa 2. Cada DFA
   recibe la proyección de la secuencia ordenada sobre su alfabeto; las habilidades
   ajenas se conservan en `foreign` y las desconocidas siguen visibles en `normalized`.
-  La DSL con textX de la etapa 4 ya tiene un validador independiente
-  (`python -m src.stage4_grammar docs/examples/wednesday.resume`); su generación
-  automática y visualización desde esta interfaz siguen pendientes.
+  `profileDocument` contiene `{validated: true, dsl, html, profile}`. La DSL se
+  genera a partir de los datos extraídos y los resultados reales de los DFA;
+  textX la valida antes de generar HTML. En modo tokens este campo es `null`.
+- `POST /api/validate-profile`: JSON `{ "text": "candidate { ... }" }`. Devuelve
+  el documento validado o HTTP 400 con `error`, `kind`, `line` y `column` para
+  errores de la DSL. Comprueba estructura y dominio, sin reclasificar declaraciones.
+- Al editar la DSL se invalida la vista anterior y se bloquea la descarga HTML.
+  Solo la respuesta de la revisión vigente puede reactivarlas. La vista utiliza
+  un iframe con sandbox; el HTML autónomo escapa todo texto del candidato.
 - En tokens, el orden y los símbolos se evalúan estrictamente; no se normalizan ni filtran.
 - Toda la clasificación se ejecuta con `pyformlang`. El frontend solo presenta resultados
   y dibuja la tabla de transiciones recibida; no mantiene otro motor de reconocimiento.
@@ -62,5 +68,5 @@ python -m pytest -q
 pnpm --dir frontend build
 ```
 
-Los casos de integración HTTP están en `tests/test_web_api.py`.
+Los casos de integración HTTP están en `tests/test_web_api.py` y `tests/test_web_stage4.py`.
 La interfaz Streamlit anterior sigue disponible mediante su comando habitual.
