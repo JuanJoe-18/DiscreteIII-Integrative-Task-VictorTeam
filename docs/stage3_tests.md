@@ -213,40 +213,16 @@ Both are *equivalent mutants*: after a move to the trap the evaluator sets `curr
 
 The 12 mutants that the original suite missed (M12, M19, M20, M25, M28, M31–M37) concerned: the accepting state in the formal tuple, the message for empty input, step numbering, the exception type, `expected_final_state`, the list of required groups, the vocabulary of three categories and three visualiser details. They motivated the SP, BV and ST tests.
 
-## 8. Traceability to the assignment
 
-| Assignment item | Evidence |
-|---|---|
-| Four profiles recognised by automata | SC-01…SC-06, EC-01…EC-08, SP-01…SP-03 |
-| Accepts valid / rejects invalid sequences | EC, BV, OR |
-| Formal definition (Q, Σ, δ, q0, F), determinism | ST-01, OR-01 |
-| Theorem 1 (language of each automaton) | OR-01 (2,500 random words per profile against an independent regular expression) and the exhaustive check of the generator (all category words up to length 5/7) |
-| Theorem 2 (total, deterministic, no ε) | ST-01 |
-| Theorem 3 (no useless states) | ST-01, ST-07 |
-| Theorem 4 (minimality) | ST-06 |
-| Theorem 5 (correctness of filtering and sorting) | EC-05, OR-02, OR-03 and `test_fullstack_all_category_combinations_match_defined_requirements` (1,024 subsets) |
-| Diagram of each automaton | ST-02, ST-03, ST-05 |
-| Correct use of the output of Stage 2 | SC-01…SC-04, SC-08, `test_pipeline_contract.py` |
-| Scenarios with realistic résumés | SC-01…SC-04 |
 
-## 9. Defects found by this review
-
-| # | Defect | Resolution |
-|---|---|---|
-| 1 | `scripts/export_formalization.py` ended with a paragraph claiming that Stage 2 “uses a dictionary”, which is false (Stage 2 is a cascade of finite-state transducers) | Paragraph replaced; the generator and the document are now in English |
-| 2 | No module design (functions, inputs and outputs) and no test-case design for Stage 3, although the assignment requires both | Part I of `stage3_formalization.md` and this document |
-| 3 | 12 of 37 injected faults survived the original suite | Section 8 of `test_stage3.py` (see §7) |
-| 4 | `visualizer.py` was only 83 % covered | ST-02, ST-03, ST-05 |
-| 5 | Rejection messages, diagram labels and the exporter were in Spanish | Translated to English (code, tests, diagrams) |
-
-## 10. Limitations
+## 8. Limitations
 
 - The oracle of OR-01 encodes the same patterns that the team defined; it proves the DFA implements the pattern, not that the pattern is the one the instructor has in mind.
 - The streamlit app and the React front end still contain Spanish interface text; they only display the English messages produced by Stage 3.
 - The Streamlit app and the web API are not covered by automated tests of Stage 3 (the API has its own `tests/test_web_api.py`).
 - Mutation analysis uses 37 hand-written mutants, not an exhaustive tool.
 
-## 11. References
+## 9. References
 
 - Myers, G. J., Sandler, C., & Badgett, T. (2011). *The Art of Software Testing* (3rd ed.). Wiley. (Equivalence classes, boundary values, decision tables.)
 - Jia, Y., & Harman, M. (2011). An analysis and survey of the development of mutation testing. *IEEE Transactions on Software Engineering, 37*(5), 649–678.
