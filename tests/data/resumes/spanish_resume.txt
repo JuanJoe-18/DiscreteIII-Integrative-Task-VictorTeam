@@ -1,0 +1,12 @@
+Juan Pérez Gómez
+juan.perez@correo.icesi.edu.co - 3001234567
+
+Perfil
+Ingeniero con cinco años de experiencia en desarrollo de software.
+
+Educación
+Ingeniería de Sistemas
+Maestría en Ciencia de Datos
+
+Habilidades:
+Python, SQL, Git, Pandas, Scikit-learn

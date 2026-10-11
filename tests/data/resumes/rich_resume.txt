@@ -1,0 +1,22 @@
+WEDNESDAY ADDAMS
+wednesday.addams@example.com | +57 300 123 4567 | linkedin.com/in/wadd | github.com/wadd/notes
+
+Summary
+Senior Full Stack Developer with 10+ years of experience. We react quickly and go the extra mile;
+previously worked at Oracle.
+
+Experience
+Web Application Developer - Nevermore Academy, 3 years
+- Implemented backend services using Node.js and Express.js, stored data in PostgreSQL,
+  used Git and GitHub Actions.
+
+Education
+Bachelor of Science in Computer Science
+AWS Certified Solutions Architect
+
+Technical Skills:
+Frontend: JavaScript, React, Figma
+Backend: Node, Go, REST APIs
+- Docker (2 years), Linux, Notion
+
+Languages: English

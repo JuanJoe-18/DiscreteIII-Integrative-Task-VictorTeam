@@ -21,7 +21,8 @@ def test_wednesday_addams_end_to_end_pipeline(classifier):
 
     # 1. Stage 1: Extraction
     extraction = extract_qualifications(cv_text)
-    assert "3" in extraction.raw_tokens
+    assert extraction.years_of_experience == 3
+    assert "3" not in extraction.raw_tokens
     assert any("JS" in t for t in extraction.raw_tokens)
     assert any("React.js" in t for t in extraction.raw_tokens)
 
