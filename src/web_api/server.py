@@ -11,9 +11,9 @@ from pathlib import Path
 import re
 from urllib.parse import urlsplit
 
-from src.stage1_regex import extract_qualifications
-from src.stage2_fst.normalizer import normalize_qualifications, sort_to_canonical_order
+from src.pipeline import extract_and_normalize, process_resume
 from src.stage3_classifier import ResumeClassifier
+from src.stage4_grammar import ProfileValidationError, validate_document
 
 ROOT = Path(__file__).resolve().parents[2]
 MAX_TEXT = 100_000
@@ -68,28 +68,10 @@ def profile_catalog():
 
 def extract_resume(text):
     """Adapt the complete Stage 1/2 results to the web response contract."""
-    extraction = extract_qualifications(text)
-    normalization = normalize_qualifications(
-        extraction.raw_tokens, extraction.years_of_experience,
-    )
+    _, normalization, candidate = extract_and_normalize(text)
     fragments = [{'text': trace.raw, 'token': trace.canonical}
                  for trace in normalization.traces]
     normalized = list(dict.fromkeys(normalization.normalized_tokens))
-    candidate = {
-        'contact': extraction.contact,
-        'education': extraction.education,
-        'job_titles': extraction.job_titles,
-        'years_of_experience': extraction.years_of_experience,
-    }
-    if extraction.candidate_name:
-        candidate['name'] = extraction.candidate_name
-    # Keep the explicit labels used by existing UI examples. Technical extraction
-    # and section boundaries are handled exclusively by the shared extractor.
-    for key, pattern in [('name', r'(?im)^[ \t]*(?:Name|Nombre)[ \t]*:[ \t]*([^\r\n]+)'),
-                         ('description', r'(?im)^[ \t]*(?:Description|Descripción|Descripcion|Perfil)[ \t]*:[ \t]*([^\r\n]+)')]:
-        match = re.search(pattern, text)
-        if match:
-            candidate[key] = match.group(1).strip()
     return fragments, normalized, candidate
 
 
@@ -102,7 +84,9 @@ def evaluate(payload):
     if not text.strip() or len(text) > MAX_TEXT:
         raise ValueError('La entrada está vacía o supera los 100 000 caracteres.')
     if mode == 'resume':
-        fragments, tokens, candidate = extract_resume(text)
+        pipeline = process_resume(text, classifier=CLASSIFIER)
+        fragments = [{'text': t.raw, 'token': t.canonical} for t in pipeline.normalization.traces]
+        tokens, candidate = pipeline.classification.input_tokens, pipeline.candidate
         known = set().union(*(a.profile.alphabet for a in CLASSIFIER.automata.values())) - {'EXPERIENCE_PRESENT'}
         if not known.intersection(tokens):
             raise ValueError('No se reconocieron habilidades técnicas del catálogo en el texto.')
@@ -115,13 +99,7 @@ def evaluate(payload):
     for pid, automaton in CLASSIFIER.automata.items():
         profile = automaton.profile
         if mode == 'resume':
-            # Stage 2 orders each profile with its FILTER transducers. Project
-            # onto the profile alphabet before strict Stage 3 recognition;
-            # unrelated skills remain visible as ignored evidence.
-            ordered = sort_to_canonical_order(tokens, pid)
-            sequence = [token for token in ordered if token in profile.alphabet]
-            result = CLASSIFIER.evaluate_profile(pid, sequence)
-            result.ignored_tokens = [token for token in tokens if token not in profile.alphabet]
+            result = pipeline.classification.results_by_profile[pid]
         else:
             result = CLASSIFIER.evaluate_profile(pid, tokens)
         observed = [{'category': LABELS[cat.name], 'tokens': sorted(cat.skills.intersection(result.evaluated_tokens))}
@@ -138,7 +116,16 @@ def evaluate(payload):
             'foreign': result.ignored_tokens, 'reason': result.rejection_reason,
         })
     return {'mode': mode, 'fragments': fragments, 'normalized': tokens, 'results': results,
-            'candidate': candidate, 'simulated': False}
+            'candidate': candidate, 'simulated': False,
+            'profileDocument': pipeline.document.to_dict() if mode == 'resume' else None}
+
+
+def validate_profile(payload):
+    if not isinstance(payload, dict) or not isinstance(payload.get('text'), str):
+        raise ValueError('Indica la DSL en el campo text.')
+    if not payload['text'].strip() or len(payload['text']) > MAX_TEXT:
+        raise ValueError('La DSL está vacía o supera los 100 000 caracteres.')
+    return validate_document(payload['text']).to_dict()
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -164,7 +151,8 @@ class Handler(SimpleHTTPRequestHandler):
             super().do_GET()
 
     def do_POST(self):
-        if urlsplit(self.path).path != '/api/evaluate':
+        route = urlsplit(self.path).path
+        if route not in ('/api/evaluate', '/api/validate-profile'):
             self.send_json({'error': 'Ruta no encontrada.'}, 404)
             return
         try:
@@ -174,7 +162,9 @@ class Handler(SimpleHTTPRequestHandler):
             if self.headers.get_content_type() != 'application/json':
                 raise ValueError('Se requiere Content-Type: application/json.')
             payload = json.loads(self.rfile.read(length).decode('utf-8'))
-            self.send_json(evaluate(payload))
+            self.send_json(evaluate(payload) if route == '/api/evaluate' else validate_profile(payload))
+        except ProfileValidationError as exc:
+            self.send_json({'error': str(exc), 'kind': exc.kind, 'line': exc.line, 'column': exc.column}, 400)
         except (ValueError, UnicodeError) as exc:
             self.send_json({'error': str(exc)}, 400)
 
