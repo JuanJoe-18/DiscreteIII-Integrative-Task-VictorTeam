@@ -33,19 +33,19 @@ with finite automata).
 
 ```mermaid
 flowchart LR
-    A[/"Résumé text<br/>(plain .txt)"/] --> B["<b>Stage 1</b><br/>Regular expressions<br/>(this document)"]
-    B -->|"raw_tokens<br/>+ years"| C["<b>Stage 2</b><br/>Finite-state transducers"]
-    C -->|"canonical, sorted symbols"| D["<b>Stage 3</b><br/>Finite automata (DFA)"]
-    B -.->|"name, contact,<br/>education, titles"| E["<b>Stage 4</b><br/>Candidate DSL (CFG)"]
+    A[/"Résumé text - (plain .txt)"/] --> B["Stage 1 - Regular expressions - (this document)"]
+    B -->|"raw_tokens - + years"| C["Stage 2 - Finite-state transducers"]
+    C -->|"canonical, sorted symbols"| D["Stage 3 - Finite automata (DFA)"]
+    B -.->|"name, contact, - education, titles"| E["Stage 4 - Candidate DSL (CFG)"]
     D -.->|"profile classification"| E
-    E --> F[/"HTML page of<br/>the candidate"/]
+    E --> F[/"HTML page of - the candidate"/]
 ```
 
 ### 0.2 What Stage 1 extracts
 
 ```mermaid
 mindmap
-  root((Stage 1<br/>19 regular expressions))
+  root((Stage 1 - 19 regular expressions))
     Contact
       EMAIL
       PHONE
@@ -81,11 +81,11 @@ real code, they are not hand-written.
 
 ```mermaid
 flowchart TD
-    T["<b>Input text</b><br/>Wednesday Addams · 3 years of experience developing web applications.<br/>Technical Skills: JS, React.js, NodeJS, Postgres, Git."]
-    T --> S1["1 · Normalise line endings<br/>and detect sections"]
-    S1 --> S2["2 · Run the 19 RegexSpec<br/>(each over its scope)"]
-    S2 --> S3["3 · Resolve overlaps<br/>(contact wins, longest technology wins)"]
-    S3 --> S4["4 · Unknown skills of the<br/>Skills list → category OTHER"]
+    T["Input text - Wednesday Addams · 3 years of experience developing web applications. - Technical Skills: JS, React.js, NodeJS, Postgres, Git."]
+    T --> S1["1 · Normalise line endings - and detect sections"]
+    S1 --> S2["2 · Run the 19 RegexSpec - (each over its scope)"]
+    S2 --> S3["3 · Resolve overlaps - (contact wins, longest technology wins)"]
+    S3 --> S4["4 · Unknown skills of the - Skills list → category OTHER"]
     S4 --> S5["5 · Build the result"]
     S5 --> R1["candidate_name = Wednesday Addams"]
     S5 --> R2["years_of_experience = 3"]
@@ -136,13 +136,13 @@ example pick it up automatically.
 
 ```mermaid
 flowchart BT
-    expressions["expressions.py<br/><i>*_PATTERN constants</i>"]
-    models["models.py<br/><i>Category, Scope, RegexSpec,<br/>ExtractedItem, ExtractionResult</i>"]
-    patterns["patterns.py<br/><i>19 RegexSpec, DEFAULT_SPECS</i>"]
-    sections["sections.py<br/><i>headings, skill items</i>"]
-    extractor["extractor.py<br/><i>ResumeExtractor,<br/>extract_qualifications</i>"]
-    storage["storage.py<br/><i>save_result / load_result</i>"]
-    init["__init__.py<br/><i>public API</i>"]
+    expressions["expressions.py - *_PATTERN constants"]
+    models["models.py - Category, Scope, RegexSpec, - ExtractedItem, ExtractionResult"]
+    patterns["patterns.py - 19 RegexSpec, DEFAULT_SPECS"]
+    sections["sections.py - headings, skill items"]
+    extractor["extractor.py - ResumeExtractor, - extract_qualifications"]
+    storage["storage.py - save_result / load_result"]
+    init["__init__.py - public API"]
     patterns --> expressions
     patterns --> models
     extractor --> patterns
@@ -286,7 +286,7 @@ sequenceDiagram
     S-->>E: [(start, end), ...]
     loop for every spec in the catalog
         E->>C: spec.regex.finditer(text, pos, endpos)
-        Note over E,C: DOCUMENT scope: the whole text<br/>SKILLS_SECTION scope: only the Skills spans
+        Note over E,C: DOCUMENT scope: the whole text - SKILLS_SECTION scope: only the Skills spans
         C-->>E: matches → ExtractedItem
     end
     E->>E: _resolve_overlaps (contact wins, longest technology wins)
@@ -348,16 +348,16 @@ years separately and is the one that turns it into the symbol `EXPERIENCE_PRESEN
 ```mermaid
 flowchart LR
     subgraph Stage1["Stage 1 (this document)"]
-      X1["raw_tokens: list of str<br/>years_of_experience: int | None"]
+      X1["raw_tokens: list of str - years_of_experience: int | None"]
     end
     subgraph Stage2["Stage 2: transducers"]
-      X2["surface form → canonical symbol<br/>JS → JAVASCRIPT, ReactJS → REACT, 3 → EXPERIENCE_PRESENT"]
+      X2["surface form → canonical symbol - JS → JAVASCRIPT, ReactJS → REACT, 3 → EXPERIENCE_PRESENT"]
     end
     subgraph Stage3["Stage 3: DFA"]
-      X3["alphabet = canonical symbols of the 4 profiles<br/>full_stack · machine_learning · cloud_devops · data_scientist"]
+      X3["alphabet = canonical symbols of the 4 profiles - full_stack · machine_learning · cloud_devops · data_scientist"]
     end
     X1 --> X2 --> X3
-    T["tests/test_stage1_contract.py"] -. "every canonical symbol of every profile<br/>can be extracted from a natural spelling" .-> X1
+    T["tests/test_stage1_contract.py"] -. "every canonical symbol of every profile - can be extracted from a natural spelling" .-> X1
 ```
 ---
 
@@ -488,10 +488,10 @@ flowchart LR
     RG["Regular grammar G"]
     RE -->|"Thompson (1968)"| ENFA
     ENFA -->|"subset construction"| DFA
-    DFA -->|"Moore / Hopcroft<br/>minimisation"| MIN
-    MIN -->|"N = Q, S = q₀<br/>A→aB for δ(A,a)=B<br/>A→ε for A ∈ F"| RG
-    RG -->|"states = non-terminals<br/>A→aB gives A —a→ B"| ENFA
-    DFA -.->|"state elimination<br/>(Kleene 1956)"| RE
+    DFA -->|"Moore / Hopcroft - minimisation"| MIN
+    MIN -->|"N = Q, S = q₀ - A→aB for δ(A,a)=B - A→ε for A ∈ F"| RG
+    RG -->|"states = non-terminals - A→aB gives A —a→ B"| ENFA
+    DFA -.->|"state elimination - (Kleene 1956)"| RE
 ```
 
 **Theorem (Kleene).** For every language L the following are equivalent: (1) L = L(r) for a regular expression r;
@@ -509,11 +509,11 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    A["1 · Read the Python pattern<br/>(expressions.py)"] --> B["2 · Write it as a formal regular expression r<br/>over named symbol classes"]
-    B --> C["3 · Build the minimal DFA M<br/>(Thompson → subsets → Moore)"]
-    C --> D["4 · Read the regular grammar G off M<br/>(or write a compact one and check it)"]
+    A["1 · Read the Python pattern - (expressions.py)"] --> B["2 · Write it as a formal regular expression r - over named symbol classes"]
+    B --> C["3 · Build the minimal DFA M - (Thompson → subsets → Moore)"]
+    C --> D["4 · Read the regular grammar G off M - (or write a compact one and check it)"]
     C --> E["5 · Draw the state diagram"]
-    D --> F{"6 · Differential test:<br/>M and G against re.fullmatch<br/>on thousands of strings"}
+    D --> F{"6 · Differential test: - M and G against re.fullmatch - on thousands of strings"}
     E --> F
     F -->|"0 disagreements"| G["7 · Publish the sheet"]
     F -->|"disagreement"| B
@@ -668,12 +668,12 @@ The nineteen expressions fall into three families:
 ```mermaid
 flowchart TD
     R[19 regular expressions]
-    R --> F1["Structured text<br/>EMAIL · PHONE · URLs<br/>(a few character classes, counted parts)"]
-    R --> F2["Phrases of a closed vocabulary<br/>NAME · YEARS · JOB_TITLE · DEGREE · CERTIFICATION<br/>(words of the domain + capitalised words)"]
-    R --> F3["Technology names<br/>10 expressions<br/>(finite unions of surface forms)"]
-    F1 --> A1["DFA over characters<br/>non-trivial counting<br/>PHONE: 31 states"]
+    R --> F1["Structured text - EMAIL · PHONE · URLs - (a few character classes, counted parts)"]
+    R --> F2["Phrases of a closed vocabulary - NAME · YEARS · JOB_TITLE · DEGREE · CERTIFICATION - (words of the domain + capitalised words)"]
+    R --> F3["Technology names - 10 expressions - (finite unions of surface forms)"]
+    F1 --> A1["DFA over characters - non-trivial counting - PHONE: 31 states"]
     F2 --> A2["DFA over characters or word classes"]
-    F3 --> A3["Tries with shared prefixes<br/>minimal DFA 7–101 states"]
+    F3 --> A3["Tries with shared prefixes - minimal DFA 7–101 states"]
 ```
 
 ### 3.1 `EMAIL`
@@ -1725,7 +1725,7 @@ stateDiagram-v2
     q0 --> q7 : t
     q0 --> q9 : bash, kotlin
     q0 --> q27 : html
-    q2 --> q9 : '#', ++
+    q2 --> q9 : ♯, ++
     q2 --> q20 : ss
     q4 --> q9 : s
     q4 --> q28 : ava
@@ -1751,7 +1751,7 @@ stateDiagram-v2
 
 ```text
 Q0 → c Q2 | j Q4 | p Q6 | t Q7 | bash Q9 | kotlin Q9 | html Q27
-Q2 → '#' Q9 | ++ Q9 | ss Q20
+Q2 → ♯ Q9 | ++ Q9 | ss Q20
 Q4 → s Q9 | ava Q28
 Q6 → hp Q9 | owershell Q9 | ython Q20
 Q7 → s Q9 | ype Q32
@@ -1797,6 +1797,7 @@ javas                q0 -j→ q4 -a→ q13 -v→ q22 -a→ q28 -s→ q33  ✗ (q
 
 **Design rationale.** 'Java(?!\s?Script)' makes Java and JavaScript mutually exclusive. The right boundary rejects 'JSON' and 'Pythonic' so abbreviations such as JS or TS are not found inside other words.
 
+* In the diagram, `♯` stands for the character `#` (of `C#`), because `#` has a special meaning inside Mermaid labels.
 * `Java` comes after `JavaScript`: with ordered alternation the longer form must be tried first; the look-ahead `(?!\s?Script)` is a second guard.
 * `JS`, `TS` are case-insensitive (`js`, `Js`) but protected by the boundaries: `JSON`, `main.js` and `TSX` are not matched.
 
@@ -3033,9 +3034,9 @@ three regular rewritings:
 
 ```mermaid
 flowchart LR
-    A["raw item<br/>'  - Frontend: React.js. '"] --> B["remove leading bullets<br/>^[\s\-*•·▪>]+"]
-    B --> C["remove a category label<br/>^[A-Za-z][A-Za-z &/]{1,30}:\s*"]
-    C --> D["remove trailing dots<br/>and blanks"]
+    A["raw item - '  - Frontend: React.js. '"] --> B["remove leading bullets - ^[\s\-*•·▪>]+"]
+    B --> C["remove a category label - ^[A-Za-z][A-Za-z &/]{1,30}:\s*"]
+    C --> D["remove trailing dots - and blanks"]
     D --> E["'React.js'"]
 ```
 
@@ -3083,9 +3084,9 @@ flowchart TD
     I["item of the Skills list"] --> K{"overlaps a known technology?"}
     K -->|yes| X["skip: already extracted"]
     K -->|no| C["remove bullets, label, (comment)"]
-    C --> L{"1 ≤ length ≤ 30<br/>and in the plausible-skill language?"}
+    C --> L{"1 ≤ length ≤ 30 - and in the plausible-skill language?"}
     L -->|no| X2["discard (probably a sentence)"]
-    L -->|yes| O["new item<br/>category OTHER, spec UNKNOWN_SKILL"]
+    L -->|yes| O["new item - category OTHER, spec UNKNOWN_SKILL"]
 ```
 ---
 
@@ -3117,7 +3118,7 @@ flowchart TD
     L --> N{"next item t?"}
     N -->|no| Z["return the non-technology items + kept"]
     N -->|yes| Q{"t.start ≥ last_end?"}
-    Q -->|yes| K["kept ← kept + t<br/>last_end ← t.end"]
+    Q -->|yes| K["kept ← kept + t - last_end ← t.end"]
     Q -->|no| D["drop t (overlaps a kept item)"]
     K --> N
     D --> N
@@ -3186,11 +3187,13 @@ All tests live in `tests/` and run with `python -m pytest tests/test_stage1_*.py
 
 ```mermaid
 flowchart BT
-    U["<b>Unit level</b><br/>test_stage1_patterns.py (66)<br/>test_stage1_sections.py (10)<br/>test_stage1_storage.py (2)"]
-    E["<b>Engine level</b><br/>test_stage1_extractor.py (32)<br/>whole résumés"]
-    C["<b>Contract level</b><br/>test_stage1_contract.py (68)<br/>Stage 1 can produce every symbol Stage 3 needs"]
-    P["<b>Pipeline level</b><br/>test_pipeline_contract.py<br/>Stage 1 → 2 → 3"]
-    U --> E --> C --> P
+    U["Unit level: patterns 66 tests, sections 10 tests, storage 2 tests"]
+    E["Engine level: extractor 32 tests on whole resumes"]
+    C["Contract level: contract 68 tests, Stage 1 can produce every symbol Stage 3 needs"]
+    P["Pipeline level: pipeline contract tests, Stage 1 to 2 to 3"]
+    U --> E
+    E --> C
+    C --> P
 ```
 
 | Test file | What it checks | Scenarios |
