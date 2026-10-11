@@ -125,12 +125,12 @@ class ResumeClassifier:
                 )
                 if token not in profile_def.alphabet:
                     rejection_reason = (
-                        f"El token '{token}' no pertenece al alfabeto del perfil {profile_def.title}."
+                        f"Token '{token}' does not belong to the alphabet of profile {profile_def.title}."
                     )
                 else:
                     rejection_reason = (
-                        f"Violación del orden canónico en el paso {step_idx}: "
-                        f"El token '{token}' (categoría {category}) no es válido desde el estado {current_state_name}."
+                        f"Canonical-order violation at step {step_idx}: "
+                        f"Token '{token}' (category {category}) is not valid from state {current_state_name}."
                     )
                 current_state_name = "q_trap"
 
@@ -145,9 +145,9 @@ class ResumeClassifier:
                    if not alternatives.intersection(observed)]
         if not is_accepted and not rejection_reason:
             rejection_reason = (
-                "Secuencia de calificaciones vacía. Ninguna competencia provista."
+                "Empty sequence. No competencies provided."
                 if not tokens else
-                f"Faltan competencias obligatorias para completar el perfil: {', '.join(missing)}."
+                f"Mandatory competencies are missing to complete the profile: {', '.join(missing)}."
             )
 
         return ProfileEvaluationResult(

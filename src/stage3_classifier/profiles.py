@@ -64,52 +64,52 @@ FULL_STACK_PROFILE = ProfileDefinition(
     canonical_categories=[
         Category(
             name="EXPERIENCE",
-            description="Experiencia reportada (opcional; sin umbral de años)",
+            description="Reported experience (optional; no minimum years)",
             skills={"EXPERIENCE_PRESENT"},
         ),
         Category(
             name="FE_LANGUAGE",
-            description="Lenguajes de programación del lado del cliente",
+            description="Client-side programming languages",
             skills={"JAVASCRIPT", "TYPESCRIPT", "HTML", "CSS"},
         ),
         Category(
             name="FE_FRAMEWORK",
-            description="Frameworks y librerías de interfaz de usuario",
+            description="User-interface frameworks and libraries",
             skills={"REACT", "ANGULAR", "VUE", "SVELTE", "NEXTJS"},
         ),
         Category(
             name="BE_LANGUAGE",
-            description="Lenguajes y entornos de ejecución del backend",
+            description="Backend languages and runtimes",
             skills={"NODE_JS", "PYTHON", "JAVA", "CSHARP", "GO"},
         ),
         Category(
             name="BE_FRAMEWORK",
-            description="Frameworks del lado del servidor",
+            description="Server-side frameworks",
             skills={"EXPRESS", "DJANGO", "SPRING_BOOT", "FASTAPI", "NESTJS"},
         ),
         Category(
             name="API_COMMUNICATION",
-            description="Protocolos y arquitectura de APIs",
+            description="API protocols and architectures",
             skills={"REST", "GRAPHQL", "WEBSOCKET"},
         ),
         Category(
             name="DATABASE_SQL",
-            description="Bases de datos relacionales SQL",
+            description="Relational SQL databases",
             skills={"POSTGRESQL", "MYSQL", "SQL", "SQLITE", "ORACLE"},
         ),
         Category(
             name="DATABASE_NOSQL",
-            description="Bases de datos NoSQL y almacenamiento en memoria",
+            description="NoSQL databases and in-memory stores",
             skills={"MONGODB", "REDIS", "FIREBASE"},
         ),
         Category(
             name="DEVOPS_CLOUD",
-            description="Contenedores y despliegue en la nube",
+            description="Containers and cloud deployment",
             skills={"DOCKER", "KUBERNETES", "AWS"},
         ),
         Category(
             name="VERSION_CONTROL",
-            description="Control de versiones y repositorios colaborativos",
+            description="Version control and collaborative repositories",
             skills={"GIT", "GITHUB", "GITLAB"},
         ),
     ],

@@ -15,6 +15,13 @@ from src.stage3_classifier.automata_models import build_all_automata
 from src.stage3_classifier.visualizer import build_graphviz_diagram
 
 
+def _local_png(digraph) -> bytes:
+    """Render a PNG with the local `dot` binary at a readable resolution."""
+    import subprocess
+    return subprocess.run(["dot", "-Tpng", "-Gdpi=110"], input=digraph.source.encode("utf-8"),
+                          capture_output=True, check=True).stdout
+
+
 def export_diagrams() -> None:
     diagrams_dir = PROJECT_ROOT / "docs" / "diagrams"
     diagrams_dir.mkdir(parents=True, exist_ok=True)
@@ -23,7 +30,7 @@ def export_diagrams() -> None:
     profiles_data = {}
 
     print("==================================================")
-    print("Generando diagramas de autómatas con Graphviz...")
+    print("Generating automata diagrams with Graphviz...")
     print("==================================================")
 
     for pid, auto in automata.items():
@@ -31,30 +38,34 @@ def export_diagrams() -> None:
         dot_path = diagrams_dir / f"{pid}.dot"
         dot_source = digraph.source
         dot_path.write_text(dot_source, encoding="utf-8")
-        print(f" -> Generado archivo DOT: {dot_path.relative_to(PROJECT_ROOT)}")
+        print(f" -> Generated DOT file: {dot_path.relative_to(PROJECT_ROOT)}")
 
         # Fetch / render SVG and PNG vector images
         svg_path = diagrams_dir / f"{pid}.svg"
         png_path = diagrams_dir / f"{pid}.png"
 
+        svg_content = ""
         try:
-            # Download SVG
-            svg_url = "https://quickchart.io/graphviz?format=svg&graph=" + urllib.parse.quote(dot_source)
-            req_svg = urllib.request.Request(svg_url, headers={"User-Agent": "Mozilla/5.0"})
-            with urllib.request.urlopen(req_svg, timeout=15) as resp:
-                svg_content = resp.read().decode("utf-8")
-                svg_path.write_text(svg_content, encoding="utf-8")
-                print(f" -> Generado archivo SVG: {svg_path.relative_to(PROJECT_ROOT)}")
-
-            # Download PNG
-            png_url = "https://quickchart.io/graphviz?format=png&graph=" + urllib.parse.quote(dot_source)
-            req_png = urllib.request.Request(png_url, headers={"User-Agent": "Mozilla/5.0"})
-            with urllib.request.urlopen(req_png, timeout=15) as resp:
-                png_path.write_bytes(resp.read())
-                print(f" -> Generado archivo PNG: {png_path.relative_to(PROJECT_ROOT)}")
-        except Exception as err:
-            print(f" [!] Aviso: No se pudo renderizar imagen remota ({err}). El archivo .dot está disponible.")
-            svg_content = ""
+            # Preferred: local Graphviz binary (no network needed)
+            svg_content = digraph.pipe(format="svg").decode("utf-8")
+            svg_path.write_text(svg_content, encoding="utf-8")
+            png_path.write_bytes(_local_png(digraph))
+            print(f" -> Generated SVG and PNG with local Graphviz: {pid}")
+        except Exception as local_err:
+            try:
+                svg_url = "https://quickchart.io/graphviz?format=svg&graph=" + urllib.parse.quote(dot_source)
+                req_svg = urllib.request.Request(svg_url, headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(req_svg, timeout=15) as resp:
+                    svg_content = resp.read().decode("utf-8")
+                    svg_path.write_text(svg_content, encoding="utf-8")
+                png_url = "https://quickchart.io/graphviz?format=png&graph=" + urllib.parse.quote(dot_source)
+                req_png = urllib.request.Request(png_url, headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(req_png, timeout=15) as resp:
+                    png_path.write_bytes(resp.read())
+                print(f" -> Generated SVG and PNG with QuickChart: {pid}")
+            except Exception as err:
+                print(f" [!] Warning: could not render images ({local_err}; {err}). The .dot file is available.")
+                svg_content = ""
 
         profiles_data[pid] = {
             "title": auto.profile.title,
@@ -68,11 +79,11 @@ def export_diagrams() -> None:
 
     # Generate a 100% self-contained, offline HTML viewer (No external WASM/CORS issues)
     html_content = f"""<!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ResumeLens - Diagramas de Autómatas Finitos (DFA)</title>
+  <title>ResumeLens - Finite Automata Diagrams (DFA)</title>
   <style>
     * {{ box-sizing: border-box; margin: 0; padding: 0; }}
     body {{
@@ -181,25 +192,25 @@ def export_diagrams() -> None:
 <body>
   <header>
     <div>
-      <h1>ResumeLens - Visualizador de Autómatas Finitos (DFA)</h1>
-      <p class="subtitle">Estructuras Discretas III - Etapa 3 (Motor de Lógica Formal)</p>
+      <h1>ResumeLens - Finite Automata Viewer (DFA)</h1>
+      <p class="subtitle">Discrete Structures III - Stage 3 (Formal Logic Engine)</p>
     </div>
     <div class="nav-tabs" id="tabButtons"></div>
   </header>
 
   <main>
     <div class="info-bar">
-      <span id="profileTitle">Cargando autómata...</span>
+      <span id="profileTitle">Loading automaton...</span>
       <div class="footer-tools">
-        <a id="downloadPngLink" class="btn-action" href="#" download>Descargar PNG</a>
-        <a id="downloadSvgLink" class="btn-action" href="#" download>Descargar SVG</a>
-        <a id="downloadDotLink" class="btn-action" href="#" download>Descargar .DOT</a>
-        <a id="onlineViewerLink" class="btn-action" href="https://dreampuf.github.io/GraphvizOnline/" target="_blank">Abrir en Graphviz Online</a>
+        <a id="downloadPngLink" class="btn-action" href="#" download>Download PNG</a>
+        <a id="downloadSvgLink" class="btn-action" href="#" download>Download SVG</a>
+        <a id="downloadDotLink" class="btn-action" href="#" download>Download .DOT</a>
+        <a id="onlineViewerLink" class="btn-action" href="https://dreampuf.github.io/GraphvizOnline/" target="_blank">Open in Graphviz Online</a>
       </div>
     </div>
 
     <div class="graph-container" id="graphContainer">
-      <!-- El diagrama SVG o imagen se inyecta aquí -->
+      <!-- The SVG diagram or image is injected here -->
     </div>
   </main>
 
@@ -226,7 +237,7 @@ def export_diagrams() -> None:
 
     function renderCurrent() {{
       const info = data[currentPid];
-      profileTitle.innerHTML = `<strong>${{info.title}}</strong> (${{info.domain}}) &bull; <em>Una arista por símbolo; transiciones a trampa agrupadas por complemento de Σ</em>`;
+      profileTitle.innerHTML = `<strong>${{info.title}}</strong> (${{info.domain}}) &bull; <em>One edge per symbol; transitions to the trap are grouped as the complement of Σ</em>`;
       
       downloadPngLink.href = info.png_file;
       downloadPngLink.download = info.png_file;
@@ -242,7 +253,7 @@ def export_diagrams() -> None:
       if (info.svg && info.svg.trim().length > 0) {{
         graphContainer.innerHTML = info.svg;
       }} else {{
-        graphContainer.innerHTML = `<img src="${{info.png_file}}" alt="Diagrama de ${{info.title}}">`;
+        graphContainer.innerHTML = `<img src="${{info.png_file}}" alt="Diagram of ${{info.title}}">`;
       }}
     }}
 
@@ -262,7 +273,7 @@ def export_diagrams() -> None:
 """
     html_path = diagrams_dir / "ver_diagramas.html"
     html_path.write_text(html_content, encoding="utf-8")
-    print(f" -> Generado visor interactivo HTML (100% autónomo y offline): {html_path.relative_to(PROJECT_ROOT)}")
+    print(f" -> Generated interactive HTML viewer (fully self-contained, offline): {html_path.relative_to(PROJECT_ROOT)}")
     print("==================================================")
 
 

@@ -37,12 +37,12 @@ class FormalTuple:
             for (src, sym), dst in sorted(self.transitions.items())
         ]
         return (
-            f"**5-Tupla Formal M = (Q, Σ, δ, q₀, F):**\n\n"
-            f"- **Q (Estados):** {{{', '.join(sorted(self.states))}}}\n"
-            f"- **Σ (Alfabeto):** {{{', '.join(sorted(self.alphabet))}}}\n"
-            f"- **q₀ (Estado Inicial):** {self.initial_state}\n"
-            f"- **F (Estados de Aceptación):** {{{', '.join(sorted(self.final_states))}}}\n"
-            f"- **δ (Transiciones de Avance y Bucles):**\n"
+            f"**Formal 5-tuple M = (Q, Σ, δ, q₀, F):**\n\n"
+            f"- **Q (States):** {{{', '.join(sorted(self.states))}}}\n"
+            f"- **Σ (Alphabet):** {{{', '.join(sorted(self.alphabet))}}}\n"
+            f"- **q₀ (Initial state):** {self.initial_state}\n"
+            f"- **F (Accepting states):** {{{', '.join(sorted(self.final_states))}}}\n"
+            f"- **δ (Forward transitions and loops):**\n"
             + "\n".join(delta_lines)
         )
 

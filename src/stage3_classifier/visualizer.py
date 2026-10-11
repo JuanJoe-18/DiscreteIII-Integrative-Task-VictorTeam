@@ -37,12 +37,12 @@ def build_graphviz_diagram(automaton: ProfileAutomaton,
     # Exact complement of the outgoing non-trap symbols in Sigma.
     for source in sorted(trap_sources):
         highlighted = any(src == source and dst == "q_trap" for src, _, dst in active)
-        dot.edge(source, "q_trap", label="Σ" if source == "q_trap" else "otros símbolos de Σ",
+        dot.edge(source, "q_trap", label="Σ" if source == "q_trap" else "other symbols of Σ",
                  color="#dc2626" if highlighted else "#94a3b8", style="dashed")
     # External symbols are rejected before delta (they are outside its domain).
     for source, symbol, target in sorted(active):
         if symbol not in formal.alphabet:
-            dot.edge(source, target, label=f"{symbol} (fuera de Σ)", color="#dc2626")
+            dot.edge(source, target, label=f"{symbol} (outside Σ)", color="#dc2626")
     return dot
 
 

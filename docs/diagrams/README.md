@@ -1,15 +1,15 @@
-# Diagramas de los DFA
+# DFA Diagrams
 
-Estos archivos se generan desde las transiciones reales de `pyformlang`, mediante:
+These files are generated from the real `pyformlang` transitions with:
 
-```powershell
+```bash
 python scripts/export_diagrams.py
 ```
 
-Cada perfil incluye DOT, SVG y PNG. `ver_diagramas.html` permite verlos sin conexión.
-Las aristas sólidas muestran los símbolos individuales. Una arista discontinua
-«otros símbolos de Σ» agrupa exactamente los símbolos del alfabeto que no figuran
-en las aristas sólidas del estado de origen; todos llevan a `q_trap`.
-En `q_trap`, el bucle Σ incluye todo el alfabeto. El estado aceptor tiene doble círculo.
-El exportador actual utiliza QuickChart para renderizar SVG/PNG y requiere conexión
-al regenerarlos; los diagramas ya exportados y el visor funcionan sin conexión.
+Each profile has a DOT, an SVG and a PNG file. `ver_diagramas.html` shows them offline.
+Solid edges show individual symbols. A dashed edge labelled "other symbols of Σ" groups
+exactly the alphabet symbols that do not appear on the solid edges of the source state;
+all of them lead to `q_trap`. On `q_trap` the loop Σ includes the whole alphabet.
+The accepting state is drawn with a double circle.
+The exporter renders SVG/PNG with the local Graphviz `dot` binary and falls back to the
+QuickChart web service when `dot` is not installed (which then requires a connection).

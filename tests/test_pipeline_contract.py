@@ -59,7 +59,7 @@ def test_stage3_rejects_raw_tokens_without_stage2(classifier):
     # Must be rejected because 'JS' and 'React.js' are not in the formal alphabet
     assert not fs_result.is_accepted
     assert fs_result.final_state == "q_trap"
-    assert "no pertenece al alfabeto" in fs_result.rejection_reason
+    assert "does not belong to the alphabet" in fs_result.rejection_reason
 
 
 def test_mary_jane_watson_ml_engineer_pipeline(classifier):
