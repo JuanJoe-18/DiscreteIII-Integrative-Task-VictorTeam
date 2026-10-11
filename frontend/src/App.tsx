@@ -128,9 +128,10 @@ export default function App() {
               <h2 id="how" className="text-[14px] font-semibold">Cómo se procesa</h2>
               <ol className="mt-2 space-y-2 text-[13px] text-[#404040]">
                 <li><strong>1. Extracción.</strong> Expresiones regulares localizan habilidades explícitas.</li>
-                <li><strong>2. Normalización.</strong> La tabla de referencia convierte cada variante en un símbolo (p. ej. NODE_JS).</li>
+                <li><strong>2. Normalización.</strong> Los FST convierten variantes en símbolos y establecen el orden por perfil.</li>
                 <li><strong>3. Orden canónico.</strong> En hoja de vida, cada perfil recibe solo sus símbolos, ordenados por categoría. Los demás no lo invalidan.</li>
                 <li><strong>4. Reconocimiento.</strong> El DFA del perfil acepta o rechaza la secuencia.</li>
+                <li><strong>5. Documento.</strong> textX valida la DSL antes de generar el perfil HTML.</li>
               </ol>
               <p className="mt-3 text-[12px] text-[#666]">En modo directo la secuencia se evalúa tal cual: desorden o símbolos externos llevan al estado trampa.</p>
             </Card>

@@ -4,6 +4,7 @@ import { PROFILES } from '../data/profiles'
 import { stateName, type Evaluation, type ProfileResult } from '../services/engine'
 import { Button, Card, Chip, EngineNotice, StatusBadge } from '../components/ui'
 import Icon from '../components/Icon'
+import ProfileOutput from '../components/ProfileOutput'
 
 export type Mode = 'resume' | 'tokens'
 type Props = {
@@ -118,6 +119,7 @@ function Results(p: Props) {
         {ev.results.map((r) => <ResultCard key={r.profileId} r={r} selected={p.selectedProfile === r.profileId} onSelect={() => p.onSelectProfile(r.profileId)} onOpen={() => p.onOpenAutomaton(r.profileId)} />)}
       </div>
       <Processing ev={ev} />
+      {ev.profileDocument && <ProfileOutput key={ev.profileDocument.dsl} document={ev.profileDocument} />}
     </>
   )
 }

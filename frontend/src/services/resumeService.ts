@@ -1,4 +1,4 @@
-import type { Evaluation } from './engine'
+import type { Evaluation, ProfileDocument } from './engine'
 import type { Profile } from '../data/profiles'
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -20,6 +20,9 @@ const evaluate = (mode: 'resume' | 'tokens', text: string) => request<Evaluation
   method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({mode, text}),
 })
 export const resumeService = {
+  validateProfile: (text: string) => request<ProfileDocument>('/api/validate-profile', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }),
+  }),
   evaluateResume: (text: string) => evaluate('resume', text),
   evaluateTokens: (text: string) => evaluate('tokens', text),
 }

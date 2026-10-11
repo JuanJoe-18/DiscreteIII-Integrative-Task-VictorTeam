@@ -17,7 +17,9 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 import streamlit as st
+import streamlit.components.v1 as components
 import graphviz
+from src.pipeline import process_resume
 from src.stage1_regex import extract_qualifications
 from src.stage2_fst import normalize_and_sort
 from src.stage3_classifier.automata_models import build_all_automata
@@ -148,10 +150,6 @@ SAMPLE_RAW_CVS = {
 # Sidebar
 # ============================================================================
 with st.sidebar:
-    st.image(
-        "https://raw.githubusercontent.com/tandpfun/skill-icons/main/icons/Python-Dark.svg",
-        width=50,
-    )
     st.title("ResumeLens")
     st.caption("Estructuras Discretas III — Tarea Integradora")
     st.divider()
@@ -195,7 +193,7 @@ with tab_eval:
     eval_mode = st.radio(
         "Modo de Evaluación:",
         [
-            "🔗 Pipeline Completo End-to-End (CV Texto Crudo ➔ Etapa 1 Regex ➔ Etapa 2 FST ➔ Etapa 3 DFA)",
+            "🔗 Pipeline Completo (CV ➔ Regex ➔ FST ➔ DFA ➔ DSL / HTML)",
             "🎯 Modo Directo (Tokens de Entrada para Etapa 3)",
         ],
         horizontal=True,
@@ -222,6 +220,9 @@ with tab_eval:
             value=SAMPLE_RAW_CVS[selected_raw_cv],
             height=90,
         )
+        if not cv_input_text.strip():
+            st.info("Escribe un currículo para ejecutar el pipeline.")
+            st.stop()
 
         # Checkbox to demonstrate why Stage 3 REQUIRES Stage 2
         skip_stage2 = st.checkbox(
@@ -249,14 +250,14 @@ with tab_eval:
         pipe_c1, pipe_c2, pipe_c3 = st.columns(3)
         with pipe_c1:
             st.markdown("##### 📌 Etapa 1: Extracción (Regex)")
-            st.caption("A cargo de Integrante 1 (Patrones en texto)")
+            st.caption("Patrones y límites de secciones")
             st.code(f"Tokens crudos:\n{extraction.raw_tokens}", language="python")
-            if extraction.years_of_experience:
+            if extraction.years_of_experience is not None:
                 st.caption(f"Experiencia detectada: {extraction.years_of_experience} años")
 
         with pipe_c2:
             st.markdown("##### 🔄 Etapa 2: Normalización (FST)")
-            st.caption("A cargo de Integrante 1 (Transductores)")
+            st.caption("Cascada de transductores pyformlang")
             if skip_stage2:
                 st.warning("⚠️ OMITIDA: Los tokens no fueron normalizados ni ordenados.")
             else:
@@ -266,8 +267,9 @@ with tab_eval:
 
         with pipe_c3:
             st.markdown("##### 🎯 Etapa 3: Autómata DFA")
-            st.caption("A cargo de Integrante 2 (Tu rol - pyformlang)")
-            st.code(f"Secuencia evaluada:\n{cleaned_tokens}", language="python")
+            st.caption("Cada perfil recibe su propia proyección y orden canónico")
+            preview = cleaned_tokens if skip_stage2 else [t for t in cleaned_tokens if t in automata[target_profile_pipeline].profile.alphabet]
+            st.code(f"Secuencia del perfil seleccionado:\n{preview}", language="python")
 
     else:
         st.subheader("1. Selección o Ingreso Directo de Tokens Normalizados")
@@ -293,7 +295,7 @@ with tab_eval:
             )
 
         # Clean and split tokens
-        raw_tokens = [t.strip().upper() for t in input_text.replace("\n", " ").split(",") if t.strip()]
+        raw_tokens = [t.strip() for t in input_text.replace("\n", " ").split(",") if t.strip()]
         cleaned_tokens: list[str] = []
         for chunk in raw_tokens:
             cleaned_tokens.extend([t for t in chunk.split() if t])
@@ -304,9 +306,16 @@ with tab_eval:
 
     # Classification Report
     st.subheader("2. Veredicto del Motor de Autómatas por Perfil")
-    report = classifier.classify(
-        cleaned_tokens, prepare_input=("Pipeline Completo" in eval_mode and not skip_stage2)
-    )
+    pipeline_result = None
+    if "Pipeline Completo" in eval_mode and not skip_stage2:
+        try:
+            pipeline_result = process_resume(cv_input_text, classifier=classifier)
+        except ValueError as error:
+            st.error(str(error))
+            st.stop()
+        report = pipeline_result.classification
+    else:
+        report = classifier.classify(cleaned_tokens, prepare_input=False)
 
     cols = st.columns(4)
     for idx, (pid, pdef) in enumerate(PROFILES_REGISTRY.items()):
@@ -385,6 +394,25 @@ with tab_eval:
     if diagram_path.exists():
         st.markdown("##### Diagrama exportado desde el DFA")
         st.image(str(diagram_path), caption=f"Diagrama de {inspected_auto.profile.title}")
+
+
+    if pipeline_result is not None:
+        st.divider()
+        st.subheader("4. Perfil estructurado validado con textX")
+        document = pipeline_result.document
+        st.caption("Los datos ausentes se omiten. Los títulos laborales no permiten inferir empleadores o fechas.")
+        with st.expander("Ver la DSL generada"):
+            st.code(document.dsl, language="text")
+        col_dsl, col_html = st.columns(2)
+        with col_dsl:
+            st.download_button("Descargar DSL", document.dsl, file_name="candidate.resume", mime="text/plain")
+        with col_html:
+            st.download_button("Descargar HTML validado", document.html, file_name="candidate.html", mime="text/html")
+        if hasattr(st, 'iframe'):
+            st.iframe(document.html, height=620, alt="Perfil validado del candidato")
+        else:
+            # Compatibility with the older Streamlit versions allowed by requirements.
+            components.html(document.html, height=620, scrolling=True)
 
 
 # ============================================================================

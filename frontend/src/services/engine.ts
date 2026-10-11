@@ -4,6 +4,7 @@ export const TRAP = 'q_trap'
 export const START = 'q0'
 export type Step = { index: number; from: string; symbol: string; to: string; explanation: string }
 export type Fragment = { text: string; token: string }
+export type ProfileDocument = { validated: true; dsl: string; html: string }
 export type ProfileResult = {
   profileId: string; accepted: boolean; sequence: string[]; steps: Step[]; finalState: string;
   observed: { category: string; tokens: string[] }[]; missing: string[]; foreign: string[]; reason?: string;
@@ -14,7 +15,7 @@ export type Evaluation = {
     name?: string; description?: string;
     contact?: { email: string[]; phone: string[]; linkedin: string[]; github: string[] };
     education?: string[]; job_titles?: string[]; years_of_experience?: number | null;
-  }; simulated: false;
+  }; simulated: false; profileDocument: ProfileDocument | null;
 }
 export const stateName = (state: string) => state
 export const isFinal = (profile: Profile, state: string) => profile.finalStates.includes(state)

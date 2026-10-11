@@ -2,9 +2,9 @@ import { Card } from '../components/ui'
 
 const PIPE = [
   { n: 'Regex', d: 'Extrae fragmentos de habilidades del texto libre.', s: 'Catálogo Regex integrado' },
-  { n: 'FST', d: 'Transductor que normaliza variantes (p. ej. “Node.js” → NODE_JS).', s: 'Pendiente (hoy: tabla de referencia)' },
+  { n: 'FST', d: 'Transductores pyformlang normalizan variantes y ordenan por perfil.', s: 'Implementado' },
   { n: 'DFA', d: 'Un autómata por perfil reconoce la secuencia canónica de habilidades.', s: 'Implementado' },
-  { n: 'CFG / textX', d: 'DSL para representar y validar información estructurada del candidato.', s: 'Pendiente' },
+  { n: 'EBNF / textX', d: 'DSL validada antes de generar y descargar el perfil HTML.', s: 'Implementado' },
 ]
 
 export default function AboutScreen() {
@@ -17,7 +17,7 @@ export default function AboutScreen() {
         </p>
       </Card>
       <Card className="p-6" aria-labelledby="pipe">
-        <h2 id="pipe" className="text-[18px] font-semibold">Pipeline previsto</h2>
+        <h2 id="pipe" className="text-[18px] font-semibold">Pipeline integrado</h2>
         <ol className="mt-4 grid gap-3 md:grid-cols-4">
           {PIPE.map((p, i) => (
             <li key={p.n} className="rounded-lg border border-[#e0dfdc] p-4">
@@ -33,8 +33,9 @@ export default function AboutScreen() {
         <h2 className="text-[18px] font-semibold">Estado actual</h2>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-[15px] text-[#404040]">
           <li>Los DFA de los cuatro perfiles están implementados.</li>
-          <li>La extracción y la normalización tienen implementaciones de referencia.</li>
-          <li>El FST real y la DSL en textX están pendientes.</li>
+          <li>Regex y FST comparten la misma implementación en las interfaces.</li>
+          <li>La etapa 4 conserva información personal, contacto, experiencia, formación y múltiples perfiles aceptados.</li>
+          <li>El editor de DSL informa errores y habilita la salida HTML únicamente después de validar.</li>
           <li>Esta interfaz se conecta a la API Python local. Los resultados, las trazas y las definiciones formales provienen de los DFA reales de pyformlang; no se simula la clasificación en el navegador.</li>
         </ul>
       </Card>
