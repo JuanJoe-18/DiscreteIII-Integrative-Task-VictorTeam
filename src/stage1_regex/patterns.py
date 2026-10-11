@@ -132,7 +132,7 @@ CANDIDATE_NAME = RegexSpec(
         "capitalised (or all upper case), allowing accents, apostrophes and hyphens ('Jean-Luc', "
         "\"O'Brien\"), and not being a typical heading word (Resume, Skills, Developer ...)."
     ),
-    accepts=("Wednesday Addams", "Mary Jane Watson", "JUAN PÉREZ", "Jean-Luc Picard"),
+    accepts=("Wednesday Addams", "Mary Jane Watson", "JUAN PÉREZ", "Jean-Luc Picard", "Conan O'Brien"),
     rejects=("wednesday addams", "Wednesday", "Curriculum Vitae", "Full Stack Developer", "Resume"),
     techniques=("anchor \\A", "capturing group", "negative lookahead", "scoped flag (?i:...)"),
     rationale=(

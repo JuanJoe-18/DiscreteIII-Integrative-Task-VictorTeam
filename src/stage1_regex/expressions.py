@@ -35,7 +35,7 @@ _CAPS = rf"{_CAP}(?:{_SP}(?:(?:de|del|of|and|y|&){_SP})?{_CAP}){{0,3}}"
 
 # A word of a person name (Wednesday, Jean-Luc, O'Brien, PÉREZ) and the words that must NOT be
 # taken as part of a name (headings and job words).
-_NAME_WORD = r"(?:[A-ZÁÉÍÓÚÑ][a-záéíóúñü]+(?:['’-][A-ZÁÉÍÓÚÑ]?[a-záéíóúñü]+)*|[A-ZÁÉÍÓÚÑ]{2,})"
+_NAME_WORD = r"(?:[A-ZÁÉÍÓÚÑ](?:[a-záéíóúñü]+|['’][A-ZÁÉÍÓÚÑ][a-záéíóúñü]+)(?:['’-][A-ZÁÉÍÓÚÑ]?[a-záéíóúñü]+)*|[A-ZÁÉÍÓÚÑ]{2,})"
 _NOT_NAME = (
     r"(?!(?i:technical|skills|experience|education|summary|profile|contact|resume|curriculum|cv|"
     r"software|web|full|senior|junior|data|machine|cloud|developer|engineer)\b)"
