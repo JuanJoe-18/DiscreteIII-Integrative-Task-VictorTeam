@@ -1,9 +1,0 @@
-flowchart TD
-    S["T′ sorted by (start ↑, length ↓)"] --> L["last_end = −1; kept = []"]
-    L --> N{"next item t?"}
-    N -->|no| Z["return the non-technology items + kept"]
-    N -->|yes| Q{"t.start ≥ last_end?"}
-    Q -->|yes| K["kept ← kept + t<br/>last_end ← t.end"]
-    Q -->|no| D["drop t (overlaps a kept item)"]
-    K --> N
-    D --> N

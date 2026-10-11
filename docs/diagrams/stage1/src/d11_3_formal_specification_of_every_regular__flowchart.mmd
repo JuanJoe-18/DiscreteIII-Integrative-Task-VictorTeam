@@ -1,8 +1,0 @@
-flowchart TD
-    R[19 regular expressions]
-    R --> F1["Structured text<br/>EMAIL · PHONE · URLs<br/>(a few character classes, counted parts)"]
-    R --> F2["Phrases of a closed vocabulary<br/>NAME · YEARS · JOB_TITLE · DEGREE · CERTIFICATION<br/>(words of the domain + capitalised words)"]
-    R --> F3["Technology names<br/>10 expressions<br/>(finite unions of surface forms)"]
-    F1 --> A1["DFA over characters<br/>non-trivial counting<br/>PHONE: 31 states"]
-    F2 --> A2["DFA over characters or word classes"]
-    F3 --> A3["Tries with shared prefixes<br/>minimal DFA 7–101 states"]
