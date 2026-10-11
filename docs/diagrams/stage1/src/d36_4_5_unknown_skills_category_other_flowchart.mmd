@@ -1,0 +1,7 @@
+flowchart TD
+    I["item of the Skills list"] --> K{"overlaps a known technology?"}
+    K -->|yes| X["skip: already extracted"]
+    K -->|no| C["remove bullets, label, (comment)"]
+    C --> L{"1 ≤ length ≤ 30<br/>and in the plausible-skill language?"}
+    L -->|no| X2["discard (probably a sentence)"]
+    L -->|yes| O["new item<br/>category OTHER, spec UNKNOWN_SKILL"]

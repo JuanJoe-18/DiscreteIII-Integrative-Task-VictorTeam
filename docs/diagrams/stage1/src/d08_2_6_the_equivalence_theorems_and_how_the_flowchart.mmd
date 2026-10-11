@@ -1,0 +1,12 @@
+flowchart LR
+    RE["Regular expression r"]
+    ENFA["ε-NFA"]
+    DFA["DFA M"]
+    MIN["Minimal DFA"]
+    RG["Regular grammar G"]
+    RE -->|"Thompson (1968)"| ENFA
+    ENFA -->|"subset construction"| DFA
+    DFA -->|"Moore / Hopcroft<br/>minimisation"| MIN
+    MIN -->|"N = Q, S = q₀<br/>A→aB for δ(A,a)=B<br/>A→ε for A ∈ F"| RG
+    RG -->|"states = non-terminals<br/>A→aB gives A —a→ B"| ENFA
+    DFA -.->|"state elimination<br/>(Kleene 1956)"| RE

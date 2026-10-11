@@ -1,0 +1,9 @@
+flowchart TD
+    A["1 · Read the Python pattern<br/>(expressions.py)"] --> B["2 · Write it as a formal regular expression r<br/>over named symbol classes"]
+    B --> C["3 · Build the minimal DFA M<br/>(Thompson → subsets → Moore)"]
+    C --> D["4 · Read the regular grammar G off M<br/>(or write a compact one and check it)"]
+    C --> E["5 · Draw the state diagram"]
+    D --> F{"6 · Differential test:<br/>M and G against re.fullmatch<br/>on thousands of strings"}
+    E --> F
+    F -->|"0 disagreements"| G["7 · Publish the sheet"]
+    F -->|"disagreement"| B

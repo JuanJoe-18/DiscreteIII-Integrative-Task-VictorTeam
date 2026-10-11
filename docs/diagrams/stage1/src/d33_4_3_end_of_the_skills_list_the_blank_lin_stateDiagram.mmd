@@ -1,0 +1,7 @@
+stateDiagram-v2
+    direction LR
+    [*] --> q0
+    q0 --> q1 : newline
+    q1 --> q1 : blank
+    q1 --> q2 : newline
+    q2 --> [*]

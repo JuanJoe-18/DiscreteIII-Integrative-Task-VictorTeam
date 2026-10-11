@@ -1,0 +1,11 @@
+stateDiagram-v2
+    direction LR
+    [*] --> q0
+    q0 --> q2 : N
+    q0 --> q11 : Reac
+    q0 --> q16 : Express, Spring
+    q2 --> q6 : e
+    q2 --> q16 : ode
+    q6 --> q11 : s, x
+    q11 --> q16 : t
+    q16 --> [*]

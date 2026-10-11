@@ -1,0 +1,10 @@
+stateDiagram-v2
+    direction LR
+    [*] --> Start
+    Start --> W1 : word
+    W1 --> W2 : Sp⁺ word
+    W2 --> W3 : Sp⁺ word
+    W3 --> W4 : Sp⁺ word
+    W2 --> [*]
+    W3 --> [*]
+    W4 --> [*]

@@ -1,0 +1,26 @@
+sequenceDiagram
+    autonumber
+    actor Caller as Pipeline / UI
+    participant E as ResumeExtractor
+    participant S as sections.py
+    participant C as Catalog (19 RegexSpec)
+    participant R as ExtractionResult
+
+    Caller->>E: extract(cv_text)
+    alt empty or blank text
+        E-->>Caller: ExtractionResult() (empty)
+    end
+    E->>E: normalise \r\n and \r to \n
+    E->>S: section_spans(text, "skills")
+    S-->>E: [(start, end), ...]
+    loop for every spec in the catalog
+        E->>C: spec.regex.finditer(text, pos, endpos)
+        Note over E,C: DOCUMENT scope: the whole text<br/>SKILLS_SECTION scope: only the Skills spans
+        C-->>E: matches → ExtractedItem
+    end
+    E->>E: _resolve_overlaps (contact wins, longest technology wins)
+    E->>S: split_skill_items for each Skills span
+    S-->>E: items of the list
+    E->>E: _unknown_skills → category OTHER
+    E->>R: raw_tokens, years, name, items
+    R-->>Caller: ExtractionResult

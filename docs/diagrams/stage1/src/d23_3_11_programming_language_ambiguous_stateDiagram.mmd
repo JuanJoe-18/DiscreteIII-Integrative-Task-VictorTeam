@@ -1,0 +1,9 @@
+stateDiagram-v2
+    direction LR
+    [*] --> q0
+    q0 --> q3 : R
+    q0 --> q4 : Go, Julia
+    q3 --> q6 : u
+    q6 --> q4 : by, st
+    q3 --> [*]
+    q4 --> [*]

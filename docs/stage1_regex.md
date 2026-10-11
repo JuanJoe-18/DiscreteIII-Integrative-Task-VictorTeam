@@ -31,68 +31,18 @@ with finite automata).
 
 ### 0.1 Where Stage 1 sits in the pipeline
 
-```mermaid
-flowchart LR
-    A[/"Résumé text - (plain .txt)"/] --> B["Stage 1 - Regular expressions - (this document)"]
-    B -->|"raw_tokens - + years"| C["Stage 2 - Finite-state transducers"]
-    C -->|"canonical, sorted symbols"| D["Stage 3 - Finite automata (DFA)"]
-    B -.->|"name, contact, - education, titles"| E["Stage 4 - Candidate DSL (CFG)"]
-    D -.->|"profile classification"| E
-    E --> F[/"HTML page of - the candidate"/]
-```
+![Diagram: 0.1 Where Stage 1 sits in the pipeline (flowchart)](diagrams/stage1/d00_0_1_where_stage_1_sits_in_the_pipeline_flowchart.png)
 
 ### 0.2 What Stage 1 extracts
 
-```mermaid
-mindmap
-  root((Stage 1 - 19 regular expressions))
-    Contact
-      EMAIL
-      PHONE
-      LINKEDIN_URL
-      GITHUB_URL
-    Identity and experience
-      CANDIDATE_NAME
-      YEARS_OF_EXPERIENCE
-      JOB_TITLE
-    Academic
-      DEGREE
-      CERTIFICATION
-    Programming languages
-      PROGRAMMING_LANGUAGE
-      PROGRAMMING_LANGUAGE_AMBIGUOUS
-    Frameworks and libraries
-      WEB_FRAMEWORK
-      WEB_FRAMEWORK_AMBIGUOUS
-      DATA_ML_LIBRARY
-    Databases
-      DATABASE
-      DATABASE_AMBIGUOUS
-    Tools and technologies
-      API_PROTOCOL
-      VERSION_CONTROL
-      DEVOPS_CLOUD_TOOL
-```
+![Diagram: 0.2 What Stage 1 extracts (mindmap)](diagrams/stage1/d01_0_2_what_stage_1_extracts_mindmap.png)
 
 ### 0.3 Life of one résumé through Stage 1
 
 The résumé of the assignment (`Wednesday Addams`) is processed as follows. The tables of this section are produced by the
 real code, they are not hand-written.
 
-```mermaid
-flowchart TD
-    T["Input text - Wednesday Addams · 3 years of experience developing web applications. - Technical Skills: JS, React.js, NodeJS, Postgres, Git."]
-    T --> S1["1 · Normalise line endings - and detect sections"]
-    S1 --> S2["2 · Run the 19 RegexSpec - (each over its scope)"]
-    S2 --> S3["3 · Resolve overlaps - (contact wins, longest technology wins)"]
-    S3 --> S4["4 · Unknown skills of the - Skills list → category OTHER"]
-    S4 --> S5["5 · Build the result"]
-    S5 --> R1["candidate_name = Wednesday Addams"]
-    S5 --> R2["years_of_experience = 3"]
-    S5 --> R3["raw_tokens = JS, React.js, NodeJS, Postgres, Git"]
-    R3 --> ST2(["to Stage 2"])
-    R2 --> ST2
-```
+![Diagram: 0.3 Life of one résumé through Stage 1 (flowchart)](diagrams/stage1/d02_0_3_life_of_one_r_sum_through_stage_1_flowchart.png)
 
 Items found in `tests/data/resumes/wednesday_addams.txt` (real output; spans are offsets in the original text):
 
@@ -134,115 +84,14 @@ example pick it up automatically.
 
 ### 1.2 Dependencies between modules
 
-```mermaid
-flowchart BT
-    expressions["expressions.py - *_PATTERN constants"]
-    models["models.py - Category, Scope, RegexSpec, - ExtractedItem, ExtractionResult"]
-    patterns["patterns.py - 19 RegexSpec, DEFAULT_SPECS"]
-    sections["sections.py - headings, skill items"]
-    extractor["extractor.py - ResumeExtractor, - extract_qualifications"]
-    storage["storage.py - save_result / load_result"]
-    init["__init__.py - public API"]
-    patterns --> expressions
-    patterns --> models
-    extractor --> patterns
-    extractor --> models
-    extractor --> sections
-    storage --> models
-    init --> extractor
-    init --> patterns
-    init --> models
-    init --> storage
-```
+![Diagram: 1.2 Dependencies between modules (flowchart)](diagrams/stage1/d03_1_2_dependencies_between_modules_flowchart.png)
 
 There are no cycles: `expressions.py` knows nothing about the rest, and `models.py` is the only module every other
 module may depend on.
 
 ### 1.3 Class diagram
 
-```mermaid
-classDiagram
-    direction LR
-    class Category {
-        <<enumeration>>
-        CONTACT
-        IDENTITY
-        EXPERIENCE
-        EDUCATION
-        PROGRAMMING_LANGUAGE
-        FRAMEWORK_LIBRARY
-        DATABASE
-        TOOL_TECHNOLOGY
-        OTHER
-    }
-    class Scope {
-        <<enumeration>>
-        DOCUMENT
-        SKILLS_SECTION
-    }
-    class RegexSpec {
-        <<frozen dataclass>>
-        +str name
-        +Category category
-        +str pattern
-        +str description
-        +tuple accepts
-        +tuple rejects
-        +int flags
-        +int group
-        +Scope scope
-        +tuple techniques
-        +str rationale
-        +regex() Pattern
-        +recognises(text) bool
-        +example_failures() list
-    }
-    class ExtractedItem {
-        <<frozen dataclass>>
-        +str spec_name
-        +Category category
-        +str text
-        +int start
-        +int end
-        +to_dict() dict
-        +from_dict(data) ExtractedItem
-    }
-    class ExtractionResult {
-        <<dataclass>>
-        +list raw_tokens
-        +int years_of_experience
-        +str candidate_name
-        +list items
-        +contact dict
-        +education list
-        +job_titles list
-        +to_dict() dict
-        +from_dict(data) ExtractionResult
-    }
-    class ResumeExtractor {
-        +tuple specs
-        +extract(cv_text) ExtractionResult
-        -_run_specs(text, skills_spans) list
-        -_resolve_overlaps(items) list
-        -_unknown_skills(text, spans, items) list
-        -_raw_tokens(items) list
-        -_years(items) int
-    }
-    class Section {
-        <<frozen dataclass>>
-        +str name
-        +int start
-        +int end
-        +body(text) str
-    }
-    RegexSpec --> Category
-    RegexSpec --> Scope
-    ExtractedItem --> Category
-    ExtractionResult "1" o-- "*" ExtractedItem
-    ResumeExtractor "1" o-- "19" RegexSpec : runs
-    ResumeExtractor ..> ExtractionResult : builds
-    ResumeExtractor ..> Section : uses
-```
+![Diagram: 1.3 Class diagram (classDiagram)](diagrams/stage1/d04_1_3_class_diagram_classDiagram.png)
 
 | Type | Role |
 |------|------|
@@ -268,34 +117,7 @@ classDiagram
 
 ### 1.5 Behaviour of `ResumeExtractor.extract`
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Caller as Pipeline / UI
-    participant E as ResumeExtractor
-    participant S as sections.py
-    participant C as Catalog (19 RegexSpec)
-    participant R as ExtractionResult
-
-    Caller->>E: extract(cv_text)
-    alt empty or blank text
-        E-->>Caller: ExtractionResult() (empty)
-    end
-    E->>E: normalise \r\n and \r to \n
-    E->>S: section_spans(text, "skills")
-    S-->>E: [(start, end), ...]
-    loop for every spec in the catalog
-        E->>C: spec.regex.finditer(text, pos, endpos)
-        Note over E,C: DOCUMENT scope: the whole text - SKILLS_SECTION scope: only the Skills spans
-        C-->>E: matches → ExtractedItem
-    end
-    E->>E: _resolve_overlaps (contact wins, longest technology wins)
-    E->>S: split_skill_items for each Skills span
-    S-->>E: items of the list
-    E->>E: _unknown_skills → category OTHER
-    E->>R: raw_tokens, years, name, items
-    R-->>Caller: ExtractionResult
-```
+![Diagram: 1.5 Behaviour of ResumeExtractor.extract (sequenceDiagram)](diagrams/stage1/d05_1_5_behaviour_of_resumeextractor_extract_sequenceDiagram.png)
 
 The five steps in prose:
 
@@ -311,23 +133,7 @@ The five steps in prose:
 
 ### 1.6 Output contract (`ExtractionResult`)
 
-```mermaid
-erDiagram
-    ExtractionResult ||--o{ ExtractedItem : items
-    ExtractionResult {
-        list raw_tokens "to Stage 2"
-        int years_of_experience "None if absent"
-        str candidate_name "None if absent"
-    }
-    ExtractedItem {
-        str spec_name "EMAIL, DATABASE, ..."
-        Category category
-        str text "normalised spaces"
-        int start "offset in the original text"
-        int end "offset in the original text"
-    }
-    ExtractedItem }o--|| Category : category
-```
+![Diagram: 1.6 Output contract (ExtractionResult) (erDiagram)](diagrams/stage1/d06_1_6_output_contract_extractionresult_erDiagram.png)
 
 | Field | Type | Meaning |
 |---|---|---|
@@ -345,20 +151,7 @@ years separately and is the one that turns it into the symbol `EXPERIENCE_PRESEN
 
 ### 1.7 Contract with the other stages
 
-```mermaid
-flowchart LR
-    subgraph Stage1["Stage 1 (this document)"]
-      X1["raw_tokens: list of str - years_of_experience: int | None"]
-    end
-    subgraph Stage2["Stage 2: transducers"]
-      X2["surface form → canonical symbol - JS → JAVASCRIPT, ReactJS → REACT, 3 → EXPERIENCE_PRESENT"]
-    end
-    subgraph Stage3["Stage 3: DFA"]
-      X3["alphabet = canonical symbols of the 4 profiles - full_stack · machine_learning · cloud_devops · data_scientist"]
-    end
-    X1 --> X2 --> X3
-    T["tests/test_stage1_contract.py"] -. "every canonical symbol of every profile - can be extracted from a natural spelling" .-> X1
-```
+![Diagram: 1.7 Contract with the other stages (flowchart)](diagrams/stage1/d07_1_7_contract_with_the_other_stages_flowchart.png)
 ---
 
 ## 2. Formal framework
@@ -479,20 +272,7 @@ eliminated by copying the rules of B into A, which does not change the language.
 
 ### 2.6 The equivalence theorems and how they are used here
 
-```mermaid
-flowchart LR
-    RE["Regular expression r"]
-    ENFA["ε-NFA"]
-    DFA["DFA M"]
-    MIN["Minimal DFA"]
-    RG["Regular grammar G"]
-    RE -->|"Thompson (1968)"| ENFA
-    ENFA -->|"subset construction"| DFA
-    DFA -->|"Moore / Hopcroft - minimisation"| MIN
-    MIN -->|"N = Q, S = q₀ - A→aB for δ(A,a)=B - A→ε for A ∈ F"| RG
-    RG -->|"states = non-terminals - A→aB gives A —a→ B"| ENFA
-    DFA -.->|"state elimination - (Kleene 1956)"| RE
-```
+![Diagram: 2.6 The equivalence theorems and how they are used here (flowchart)](diagrams/stage1/d08_2_6_the_equivalence_theorems_and_how_the_flowchart.png)
 
 **Theorem (Kleene).** For every language L the following are equivalent: (1) L = L(r) for a regular expression r;
 (2) L = L(M) for a DFA M; (3) L = L(M') for an NFA M'; (4) L = L(G) for a regular grammar G.
@@ -507,17 +287,7 @@ flowchart LR
 
 **Procedure followed for every sheet of section 3** (it is how the numbers in this document were obtained):
 
-```mermaid
-flowchart TD
-    A["1 · Read the Python pattern - (expressions.py)"] --> B["2 · Write it as a formal regular expression r - over named symbol classes"]
-    B --> C["3 · Build the minimal DFA M - (Thompson → subsets → Moore)"]
-    C --> D["4 · Read the regular grammar G off M - (or write a compact one and check it)"]
-    C --> E["5 · Draw the state diagram"]
-    D --> F{"6 · Differential test: - M and G against re.fullmatch - on thousands of strings"}
-    E --> F
-    F -->|"0 disagreements"| G["7 · Publish the sheet"]
-    F -->|"disagreement"| B
-```
+![Diagram: 2.6 The equivalence theorems and how they are used here (flowchart)](diagrams/stage1/d09_2_6_the_equivalence_theorems_and_how_the_flowchart.png)
 
 The differential test (step 6) generates random strings and random *mutations* (delete / insert / replace a symbol) of
 the documented examples, and compares three things: `re.fullmatch(pattern, s)`, the DFA and the grammar. It is strong
@@ -531,21 +301,7 @@ The expression of the version-control tools, restricted to the git family, is
 
 Its minimal DFA (after Thompson and the subset construction) is:
 
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> q0
-    q0 --> q1 : g
-    q1 --> q2 : i
-    q2 --> q3 : t
-    q3 --> q4 : h
-    q3 --> q5 : l
-    q4 --> q6 : u
-    q5 --> q6 : a
-    q6 --> q7 : b
-    q3 --> [*]
-    q7 --> [*]
-```
+![Diagram: 2.7 Worked example of the constructions: Git(?:Hub|Lab)? (stateDiagram)](diagrams/stage1/d10_2_7_worked_example_of_the_constructions__stateDiagram.png)
 
 Reading the automaton as a regular grammar (N = Q, S = q₀, every state is a non-terminal):
 
@@ -665,16 +421,7 @@ All the automata and grammars shown were checked against the real Python express
 
 The nineteen expressions fall into three families:
 
-```mermaid
-flowchart TD
-    R[19 regular expressions]
-    R --> F1["Structured text - EMAIL · PHONE · URLs - (a few character classes, counted parts)"]
-    R --> F2["Phrases of a closed vocabulary - NAME · YEARS · JOB_TITLE · DEGREE · CERTIFICATION - (words of the domain + capitalised words)"]
-    R --> F3["Technology names - 10 expressions - (finite unions of surface forms)"]
-    F1 --> A1["DFA over characters - non-trivial counting - PHONE: 31 states"]
-    F2 --> A2["DFA over characters or word classes"]
-    F3 --> A3["Tries with shared prefixes - minimal DFA 7–101 states"]
-```
+![Diagram: 3. Formal specification of every regular expression (flowchart)](diagrams/stage1/d11_3_formal_specification_of_every_regular__flowchart.png)
 
 ### 3.1 `EMAIL`
 
@@ -720,21 +467,7 @@ A = ASCII letters and digits; N = non-ASCII letters/digits; W = A ∪ N ∪ {_} 
 
 **State diagram** (minimal DFA, M = (Q, Σ, δ, q₀, F) with Q = {q₀,…,q₅}, F = {q₅})
 
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> q0
-    q0 --> q1 : L
-    q1 --> q1 : L
-    q1 --> q2 : At
-    q2 --> q3 : X
-    q3 --> q3 : X
-    q3 --> q4 : P
-    q4 --> q5 : X
-    q5 --> q4 : P
-    q5 --> q5 : X
-    q5 --> [*]
-```
+![Diagram: 3.1 EMAIL (stateDiagram)](diagrams/stage1/d12_3_1_email_stateDiagram.png)
 
 **Regular grammar** G = (Σ, N, S, P) with S = X₀ (compact form, checked against the DFA)
 
@@ -830,20 +563,7 @@ Sep = {space, hyphen};  D = digits.
 
 **Automaton.** The diagram is the NFA read directly off the regular grammar below (non-terminals are states, so it is exactly the grammar → automaton construction of section 2.6). The minimal *deterministic* automaton of the same language has **31 states** (verified below), too many to draw legibly.
 
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> S
-    S --> Z : Plus D
-    S --> Area : ε
-    Z --> Z2 : D
-    Z --> Area : Sep ∣ ε
-    Z2 --> Area : D Sep ∣ D ∣ Sep ∣ ε
-    Area --> M : Lp D D D Rp ∣ Lp D D D Rp Sep ∣ D D D ∣ D D D Sep
-    M --> T : D D D ∣ D D D Sep
-    T --> F : D D D D
-    F --> [*]
-```
+![Diagram: 3.2 PHONE (stateDiagram)](diagrams/stage1/d13_3_2_phone_stateDiagram.png)
 
 **Regular grammar** (compact form of section 2.5; checked against the minimal DFA)
 
@@ -925,17 +645,7 @@ L = { [scheme://] [www.] linkedin.com/in/ handle [/] }  with handle ∈ (W ∪ {
 
 **Automaton.** The diagram is the NFA read directly off the regular grammar below (non-terminals are states, so it is exactly the grammar → automaton construction of section 2.6). The minimal *deterministic* automaton of the same language has **31 states** (verified below), too many to draw legibly.
 
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> S
-    S --> W : http∶⁄⁄ ∣ https∶⁄⁄ ∣ ε
-    W --> D : www. ∣ ε
-    D --> H : linkedin.com⁄in⁄
-    H --> H : Hd
-    H --> F : Hd ∣ Hd ⁄
-    F --> [*]
-```
+![Diagram: 3.3 LINKEDIN_URL (stateDiagram)](diagrams/stage1/d14_3_3_linkedin_url_stateDiagram.png)
 
 **Regular grammar** (compact form of section 2.5; checked against the minimal DFA)
 
@@ -1016,20 +726,7 @@ L = { [scheme://] [www.] github.com/ user [ / repo ] [/] }  with user ∈ Hg⁺ 
 
 **Automaton.** The diagram is the NFA read directly off the regular grammar below (non-terminals are states, so it is exactly the grammar → automaton construction of section 2.6). The minimal *deterministic* automaton of the same language has **29 states** (verified below), too many to draw legibly.
 
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> S
-    S --> W : http∶⁄⁄ ∣ https∶⁄⁄ ∣ ε
-    W --> D : www. ∣ ε
-    D --> U : github.com⁄
-    U --> U : Hd
-    U --> F : Hd ∣ Hd ⁄
-    U --> R : Hd ⁄
-    R --> R : Hd ∣ Hd .
-    R --> F : Hd ∣ Hd ⁄
-    F --> [*]
-```
+![Diagram: 3.4 GITHUB_URL (stateDiagram)](diagrams/stage1/d15_3_4_github_url_stateDiagram.png)
 
 **Regular grammar** (compact form of section 2.5; checked against the minimal DFA)
 
@@ -1115,39 +812,11 @@ Examples of wₙ: `Wednesday`, `Jean-Luc`, `O'Brien`, `PÉREZ`; not `wednesday`,
 
 **State diagram of one name word** (minimal DFA, 7 states; accepting states have an arrow to `[*]`)
 
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> q0
-    q0 --> q1 : U
-    q1 --> q2 : L
-    q1 --> q3 : Q
-    q1 --> q4 : U
-    q2 --> q2 : L
-    q2 --> q5 : H, Q
-    q3 --> q6 : U
-    q4 --> q4 : U
-    q5 --> q2 : L
-    q5 --> q6 : U
-    q6 --> q2 : L
-    q2 --> [*]
-    q4 --> [*]
-```
+![Diagram: 3.5 CANDIDATE_NAME (stateDiagram)](diagrams/stage1/d16_3_5_candidate_name_stateDiagram.png)
 
 **Chaining 2 to 4 words** (each `word` is the automaton above restricted to *wₙ ∖ Heading*; the name is accepted from W2 on)
 
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> Start
-    Start --> W1 : word
-    W1 --> W2 : Sp⁺ word
-    W2 --> W3 : Sp⁺ word
-    W3 --> W4 : Sp⁺ word
-    W2 --> [*]
-    W3 --> [*]
-    W4 --> [*]
-```
+![Diagram: 3.5 CANDIDATE_NAME (stateDiagram)](diagrams/stage1/d17_3_5_candidate_name_stateDiagram.png)
 
 **Regular grammar of one word** (compact form, checked against the DFA)
 
@@ -1248,29 +917,7 @@ Only the number 0–49 or number word is stored as the amount of years.
 
 **State diagram** (minimal DFA of the digit branch, runs of letters shown as one arrow; `Sep` = whitespace or hyphen, `Digit` = Z, O or R)
 
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> q0
-    q0 --> q1 : O, Z
-    q0 --> q2 : R
-    q1 --> q2 : Digit
-    q1 --> q3 : Sep, Pl
-    q1 --> q4 : a
-    q1 --> q5 : y
-    q2 --> q3 : Sep, Pl
-    q2 --> q4 : a
-    q2 --> q5 : y
-    q3 --> q3 : Sep
-    q3 --> q4 : a
-    q3 --> q5 : y
-    q4 --> q6 : n, ñ
-    q5 --> q8 : ear, r
-    q6 --> q8 : o
-    q8 --> q10 : s
-    q8 --> [*]
-    q10 --> [*]
-```
+![Diagram: 3.6 YEARS_OF_EXPERIENCE (stateDiagram)](diagrams/stage1/d18_3_6_years_of_experience_stateDiagram.png)
 
 **Regular grammar** read off the (compressed) diagram: terminals are classes or strings
 
@@ -1363,18 +1010,7 @@ L = { [seniority] domain [Application] role }: `Senior Full Stack Developer`, `M
 
 **State diagram** (word-level minimal DFA)
 
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> q0
-    q0 --> q1 : Dom
-    q0 --> q2 : Sen
-    q1 --> q3 : App
-    q1 --> q4 : Role
-    q2 --> q1 : Dom
-    q3 --> q4 : Role
-    q4 --> [*]
-```
+![Diagram: 3.7 JOB_TITLE (stateDiagram)](diagrams/stage1/d19_3_7_job_title_stateDiagram.png)
 
 **Regular grammar** induced by the DFA (terminals are word classes)
 
@@ -1470,34 +1106,7 @@ L = { `Bachelor of Science in Computer Science`, `Master's degree in Data Scienc
 
 **Automaton.** The diagram is the NFA read directly off the regular grammar below (non-terminals are states, so it is exactly the grammar → automaton construction of section 2.6). The minimal *deterministic* automaton of the same language has **33 states** (verified below), too many to draw legibly.
 
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> S
-    S --> Pre : Bm
-    S --> F : Ab
-    S --> E : Ab OIE ∣ Im DE
-    Pre --> P : OI ∣ Dg OI
-    P --> P3 : C
-    P3 --> Q : ε
-    P3 --> P2 : C ∣ Link C
-    P2 --> Q : ε
-    P2 --> P1 : C ∣ Link C
-    P1 --> Q : ε
-    P1 --> P0 : C ∣ Link C
-    P0 --> Q : ε
-    Q --> E : OI
-    E --> E3 : C
-    E3 --> E2 : C ∣ Link C
-    E2 --> E1 : C ∣ Link C
-    E1 --> E0 : C ∣ Link C
-    E0 --> [*]
-    E1 --> [*]
-    E2 --> [*]
-    E3 --> [*]
-    F --> [*]
-    Q --> [*]
-```
+![Diagram: 3.8 DEGREE (stateDiagram)](diagrams/stage1/d20_3_8_degree_stateDiagram.png)
 
 **Regular grammar** (compact form of section 2.5; checked against the minimal DFA)
 
@@ -1599,26 +1208,7 @@ L = { `AWS Certified Solutions Architect`, `Google Cloud Certified Professional 
 
 **Automaton.** The diagram is the NFA read directly off the regular grammar below (non-terminals are states, so it is exactly the grammar → automaton construction of section 2.6). The minimal *deterministic* automaton of the same language has **15 states** (verified below), too many to draw legibly.
 
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> S
-    S --> H : Aw Ce ∣ Go Cl Ce
-    S --> K : Ce Cap Cap
-    H --> H3 : Cap
-    H3 --> H2 : Cap ∣ Lk Cap
-    H2 --> H1 : Cap ∣ Lk Cap
-    H1 --> H0 : Cap ∣ Lk Cap
-    K --> K2 : Cap
-    K2 --> F : Cap
-    F --> [*]
-    H0 --> [*]
-    H1 --> [*]
-    H2 --> [*]
-    H3 --> [*]
-    K --> [*]
-    K2 --> [*]
-```
+![Diagram: 3.9 CERTIFICATION (stateDiagram)](diagrams/stage1/d21_3_9_certification_stateDiagram.png)
 
 **Regular grammar** (compact form of section 2.5; checked against the minimal DFA)
 
@@ -1715,37 +1305,7 @@ The language has 19 word forms (`S` stands for a separator; lower-cased when fol
 
 **State diagram** (minimal DFA with 46 states; a chain of states with a single exit is drawn as one arrow labelled with the literal text; `␣` is a whitespace character)
 
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> q0
-    q0 --> q2 : c
-    q0 --> q4 : j
-    q0 --> q6 : p
-    q0 --> q7 : t
-    q0 --> q9 : bash, kotlin
-    q0 --> q27 : html
-    q2 --> q9 : ♯, ++
-    q2 --> q20 : ss
-    q4 --> q9 : s
-    q4 --> q28 : ava
-    q6 --> q9 : hp, owershell
-    q6 --> q20 : ython
-    q7 --> q9 : s
-    q7 --> q32 : ype
-    q20 --> q9 : 3
-    q27 --> q9 : 5
-    q28 --> q33 : s
-    q28 --> q34 : ␣
-    q32 --> q33 : s
-    q32 --> q34 : ␣
-    q33 --> q9 : cript
-    q34 --> q33 : s
-    q9 --> [*]
-    q20 --> [*]
-    q27 --> [*]
-    q28 --> [*]
-```
+![Diagram: 3.10 PROGRAMMING_LANGUAGE (stateDiagram)](diagrams/stage1/d22_3_10_programming_language_stateDiagram.png)
 
 **Regular grammar** read off the diagram (terminals are strings; every non-terminal is a state of the DFA)
 
@@ -1844,17 +1404,7 @@ The language has 5 word forms (`S` stands for a separator; lower-cased when fold
 
 **State diagram** (minimal DFA with 11 states; a chain of states with a single exit is drawn as one arrow labelled with the literal text; `␣` is a whitespace character)
 
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> q0
-    q0 --> q3 : R
-    q0 --> q4 : Go, Julia
-    q3 --> q6 : u
-    q6 --> q4 : by, st
-    q3 --> [*]
-    q4 --> [*]
-```
+![Diagram: 3.11 PROGRAMMING_LANGUAGE_AMBIGUOUS (stateDiagram)](diagrams/stage1/d23_3_11_programming_language_ambiguous_stateDiagram.png)
 
 **Regular grammar** read off the diagram (terminals are strings; every non-terminal is a state of the DFA)
 
@@ -1943,37 +1493,7 @@ The language has 23 word forms (`S` stands for a separator; lower-cased when fol
 
 **State diagram** (minimal DFA with 56 states; a chain of states with a single exit is drawn as one arrow labelled with the literal text; `␣` is a whitespace character)
 
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> q0
-    q0 --> q4 : f
-    q0 --> q5 : n
-    q0 --> q7 : s
-    q0 --> q25 : reac
-    q0 --> q30 : angular, vue
-    q0 --> q36 : express
-    q0 --> q45 : django
-    q4 --> q45 : astapi, lask
-    q5 --> q14 : e
-    q5 --> q36 : ode
-    q7 --> q45 : velte
-    q7 --> q51 : pring
-    q14 --> q25 : s, x
-    q25 --> q36 : t
-    q30 --> q39 : '.'
-    q30 --> q40 : j
-    q36 --> q39 : '.'
-    q36 --> q40 : j
-    q39 --> q40 : j
-    q40 --> q45 : s
-    q51 --> q52 : -, ␣
-    q51 --> q53 : b
-    q52 --> q53 : b
-    q53 --> q45 : oot
-    q30 --> [*]
-    q45 --> [*]
-```
+![Diagram: 3.12 WEB_FRAMEWORK (stateDiagram)](diagrams/stage1/d24_3_12_web_framework_stateDiagram.png)
 
 **Regular grammar** read off the diagram (terminals are strings; every non-terminal is a state of the DFA)
 
@@ -2072,19 +1592,7 @@ The language has 6 word forms (`S` stands for a separator; lower-cased when fold
 
 **State diagram** (minimal DFA with 21 states; a chain of states with a single exit is drawn as one arrow labelled with the literal text; `␣` is a whitespace character)
 
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> q0
-    q0 --> q2 : N
-    q0 --> q11 : Reac
-    q0 --> q16 : Express, Spring
-    q2 --> q6 : e
-    q2 --> q16 : ode
-    q6 --> q11 : s, x
-    q11 --> q16 : t
-    q16 --> [*]
-```
+![Diagram: 3.13 WEB_FRAMEWORK_AMBIGUOUS (stateDiagram)](diagrams/stage1/d25_3_13_web_framework_ambiguous_stateDiagram.png)
 
 **Regular grammar** read off the diagram (terminals are strings; every non-terminal is a state of the DFA)
 
@@ -2179,52 +1687,7 @@ The language has 29 word forms (`S` stands for a separator; lower-cased when fol
 
 **State diagram** (minimal DFA with 89 states; a chain of states with a single exit is drawn as one arrow labelled with the literal text; `␣` is a whitespace character)
 
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> q0
-    q0 --> q6 : p
-    q0 --> q7 : s
-    q0 --> q8 : t
-    q0 --> q25 : cat, xg
-    q0 --> q26 : ker
-    q0 --> q46 : nump
-    q0 --> q57 : lightgbm, matplotlib
-    q6 --> q18 : y
-    q6 --> q26 : and
-    q6 --> q46 : lotl
-    q6 --> q60 : ower
-    q7 --> q21 : k
-    q7 --> q35 : ci
-    q7 --> q43 : tatsmodel
-    q7 --> q63 : eabo
-    q8 --> q57 : ableau
-    q8 --> q76 : ensor
-    q18 --> q33 : -, ␣
-    q18 --> q34 : t
-    q21 --> q37 : -, '_', ␣
-    q21 --> q38 : l
-    q25 --> q57 : boost
-    q26 --> q43 : a
-    q33 --> q34 : t
-    q34 --> q57 : orch
-    q35 --> q21 : kit
-    q35 --> q46 : p
-    q37 --> q38 : l
-    q38 --> q63 : ea
-    q43 --> q57 : s
-    q46 --> q57 : y
-    q60 --> q70 : -, ␣
-    q60 --> q71 : b
-    q63 --> q57 : rn
-    q70 --> q71 : b
-    q71 --> q57 : i
-    q76 --> q81 : -, ␣
-    q76 --> q82 : f
-    q81 --> q82 : f
-    q82 --> q57 : low
-    q57 --> [*]
-```
+![Diagram: 3.14 DATA_ML_LIBRARY (stateDiagram)](diagrams/stage1/d26_3_14_data_ml_library_stateDiagram.png)
 
 **Regular grammar** read off the diagram (terminals are strings; every non-terminal is a state of the DFA)
 
@@ -2336,35 +1799,7 @@ The language has 16 word forms (`S` stands for a separator; lower-cased when fol
 
 **State diagram** (minimal DFA with 64 states; a chain of states with a single exit is drawn as one arrow labelled with the literal text; `␣` is a whitespace character)
 
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> q0
-    q0 --> q4 : m
-    q0 --> q25 : sql
-    q0 --> q42 : cassandra, elasticsearch, redis
-    q0 --> q44 : firebas
-    q0 --> q54 : postgre
-    q4 --> q31 : ysq
-    q4 --> q41 : ongo
-    q4 --> q49 : ariad
-    q25 --> q34 : -, ␣
-    q25 --> q36 : s
-    q25 --> q44 : it
-    q31 --> q42 : l
-    q34 --> q36 : s
-    q36 --> q42 : erver
-    q41 --> q49 : d
-    q44 --> q42 : e
-    q49 --> q42 : b
-    q54 --> q58 : s
-    q58 --> q31 : q
-    q25 --> [*]
-    q41 --> [*]
-    q42 --> [*]
-    q54 --> [*]
-    q58 --> [*]
-```
+![Diagram: 3.15 DATABASE (stateDiagram)](diagrams/stage1/d27_3_15_database_stateDiagram.png)
 
 **Regular grammar** read off the diagram (terminals are strings; every non-terminal is a state of the DFA)
 
@@ -2455,13 +1890,7 @@ The language has 1 word forms (`S` stands for a separator; lower-cased when fold
 
 **State diagram** (minimal DFA with 7 states; a chain of states with a single exit is drawn as one arrow labelled with the literal text; `␣` is a whitespace character)
 
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> q0
-    q0 --> q6 : Oracle
-    q6 --> [*]
-```
+![Diagram: 3.16 DATABASE_AMBIGUOUS (stateDiagram)](diagrams/stage1/d28_3_16_database_ambiguous_stateDiagram.png)
 
 **Regular grammar** read off the diagram (terminals are strings; every non-terminal is a state of the DFA)
 
@@ -2535,51 +1964,7 @@ The language has 1000 word forms (`S` stands for a separator; lower-cased when f
 
 **State diagram** (minimal DFA with 35 states; a chain of states with a single exit is drawn as one arrow labelled with the literal text; `␣` is a whitespace character)
 
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> q0
-    q0 --> q1 : G, g
-    q0 --> q2 : R
-    q0 --> q3 : W, w
-    q1 --> q4 : R, r
-    q2 --> q13 : EST
-    q2 --> q14 : est
-    q3 --> q7 : E, e
-    q4 --> q8 : A, a
-    q7 --> q11 : B, b
-    q8 --> q12 : P, p
-    q11 --> q15 : -, ␣
-    q11 --> q16 : S, s
-    q12 --> q17 : H, h
-    q13 --> q18 : A
-    q13 --> q20 : ␣
-    q13 --> q30 : ful
-    q14 --> q18 : A
-    q14 --> q20 : ␣
-    q14 --> q31 : ful
-    q15 --> q16 : S, s
-    q16 --> q22 : O, o
-    q17 --> q23 : Q, q
-    q18 --> q29 : PI
-    q20 --> q18 : A
-    q22 --> q27 : C, c
-    q23 --> q28 : L, l
-    q27 --> q32 : K, k
-    q29 --> q28 : s
-    q30 --> q18 : A
-    q30 --> q20 : ␣
-    q31 --> q18 : A
-    q31 --> q20 : ␣
-    q32 --> q33 : E, e
-    q33 --> q34 : T, t
-    q34 --> q28 : S, s
-    q13 --> [*]
-    q28 --> [*]
-    q29 --> [*]
-    q30 --> [*]
-    q34 --> [*]
-```
+![Diagram: 3.17 API_PROTOCOL (stateDiagram)](diagrams/stage1/d29_3_17_api_protocol_stateDiagram.png)
 
 **Regular grammar** read off the diagram (terminals are strings; every non-terminal is a state of the DFA)
 
@@ -2685,20 +2070,7 @@ The language has 6 word forms (`S` stands for a separator; lower-cased when fold
 
 **State diagram** (minimal DFA with 25 states; a chain of states with a single exit is drawn as one arrow labelled with the literal text; `␣` is a whitespace character)
 
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> q0
-    q0 --> q3 : s
-    q0 --> q9 : git
-    q0 --> q11 : bitbucket
-    q3 --> q7 : ubversio, v
-    q7 --> q11 : n
-    q9 --> q17 : hu, la
-    q17 --> q11 : b
-    q9 --> [*]
-    q11 --> [*]
-```
+![Diagram: 3.18 VERSION_CONTROL (stateDiagram)](diagrams/stage1/d30_3_18_version_control_stateDiagram.png)
 
 **Regular grammar** read off the diagram (terminals are strings; every non-terminal is a state of the DFA)
 
@@ -2794,60 +2166,7 @@ The language is **infinite** (a run of blanks of any length is allowed in `\s+`)
 
 **State diagram** (minimal DFA with 101 states; a chain of states with a single exit is drawn as one arrow labelled with the literal text; `␣` is a whitespace character)
 
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> q0
-    q0 --> q1 : a
-    q0 --> q3 : g
-    q0 --> q6 : k
-    q0 --> q28 : docker, linux, podman
-    q0 --> q33 : hel
-    q0 --> q60 : jenki
-    q0 --> q63 : terra
-    q1 --> q13 : w
-    q1 --> q41 : rgo
-    q1 --> q42 : nsibl, zur
-    q1 --> q70 : mazon␣
-    q3 --> q28 : cp
-    q3 --> q31 : it
-    q3 --> q75 : oogle␣
-    q6 --> q13 : 8
-    q6 --> q82 : ubernet
-    q13 --> q28 : s
-    q31 --> q65 : hub
-    q31 --> q66 : lab
-    q33 --> q28 : m
-    q41 --> q54 : -, ␣
-    q41 --> q55 : c
-    q42 --> q28 : e
-    q54 --> q55 : c
-    q55 --> q28 : d
-    q60 --> q13 : n
-    q63 --> q33 : for
-    q65 --> q71 : -, ␣
-    q65 --> q72 : a
-    q66 --> q73 : -, ␣
-    q66 --> q74 : c
-    q70 --> q70 : ␣
-    q70 --> q89 : web␣
-    q71 --> q72 : a
-    q72 --> q60 : ctio
-    q73 --> q74 : c
-    q74 --> q80 : i
-    q75 --> q75 : ␣
-    q75 --> q92 : cloud
-    q80 --> q54 : '/'
-    q82 --> q13 : e
-    q89 --> q82 : servic
-    q89 --> q89 : ␣
-    q92 --> q94 : ␣
-    q94 --> q63 : plat
-    q94 --> q94 : ␣
-    q28 --> [*]
-    q80 --> [*]
-    q92 --> [*]
-```
+![Diagram: 3.19 DEVOPS_CLOUD_TOOL (stateDiagram)](diagrams/stage1/d31_3_19_devops_cloud_tool_stateDiagram.png)
 
 **Regular grammar** read off the diagram (terminals are strings; every non-terminal is a state of the DFA)
 
@@ -2989,34 +2308,13 @@ body of the Skills section also ends at the first blank line.
 
 ### 4.2 Sections as a state machine
 
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> Outside
-    Outside --> InSkills : Skills heading (line or inline)
-    Outside --> InOther : any other heading
-    InOther --> InSkills : Skills heading
-    InSkills --> Outside : blank line
-    InSkills --> InOther : another heading
-    InOther --> InOther : another heading
-    InSkills --> [*] : end of text
-    InOther --> [*] : end of text
-    Outside --> [*] : end of text
-```
+![Diagram: 4.2 Sections as a state machine (stateDiagram)](diagrams/stage1/d32_4_2_sections_as_a_state_machine_stateDiagram.png)
 
 ### 4.3 End of the skills list: the blank line
 
 A blank line is a newline, any number of blanks and another newline: **r = n · Sp\* · n**. Its minimal DFA (3 states):
 
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> q0
-    q0 --> q1 : newline
-    q1 --> q1 : blank
-    q1 --> q2 : newline
-    q2 --> [*]
-```
+![Diagram: 4.3 End of the skills list: the blank line (stateDiagram)](diagrams/stage1/d33_4_3_end_of_the_skills_list_the_blank_lin_stateDiagram.png)
 
 ```text
 Q0 → n Q1
@@ -3032,13 +2330,7 @@ The text of a Skills section is cut into **items** with the separator class **Σ
 the items are the maximal substrings of the complement alphabet, `[^,;•·|\n]+`. Each item is then cleaned by
 three regular rewritings:
 
-```mermaid
-flowchart LR
-    A["raw item - '  - Frontend: React.js. '"] --> B["remove leading bullets - ^[\s\-*•·▪>]+"]
-    B --> C["remove a category label - ^[A-Za-z][A-Za-z &/]{1,30}:\s*"]
-    C --> D["remove trailing dots - and blanks"]
-    D --> E["'React.js'"]
-```
+![Diagram: 4.4 Items of a skills list (flowchart)](diagrams/stage1/d34_4_4_items_of_a_skills_list_flowchart.png)
 
 ### 4.5 Unknown skills (category `OTHER`)
 
@@ -3050,22 +2342,7 @@ An item of the Skills list that overlaps no technology found by the catalog is a
 
 that is, one to three technology-like "words" starting with a letter (no sentences). Minimal DFA (6 states):
 
-```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> q0
-    q0 --> q1 : Lt
-    q1 --> q1 : Lt, Ot
-    q1 --> q2 : Space
-    q2 --> q3 : Lt, Ot
-    q3 --> q3 : Lt, Ot
-    q3 --> q4 : Space
-    q4 --> q5 : Lt, Ot
-    q5 --> q5 : Lt, Ot
-    q1 --> [*]
-    q3 --> [*]
-    q5 --> [*]
-```
+![Diagram: 4.5 Unknown skills (category OTHER) (stateDiagram)](diagrams/stage1/d35_4_5_unknown_skills_category_other_stateDiagram.png)
 
 ```text
 Q0 → Lt Q1
@@ -3079,15 +2356,7 @@ Q5 → Lt Q5 | Ot Q5 | ε
 Verified against `[A-Za-z][\w.+#/-]*(?:[ ][\w.+#/-]+){0,2}` on 5332 strings. The length bound (≤ 30) is another
 regular condition: L ∩ Σ^{≤30}, a finite intersection.
 
-```mermaid
-flowchart TD
-    I["item of the Skills list"] --> K{"overlaps a known technology?"}
-    K -->|yes| X["skip: already extracted"]
-    K -->|no| C["remove bullets, label, (comment)"]
-    C --> L{"1 ≤ length ≤ 30 - and in the plausible-skill language?"}
-    L -->|no| X2["discard (probably a sentence)"]
-    L -->|yes| O["new item - category OTHER, spec UNKNOWN_SKILL"]
-```
+![Diagram: 4.5 Unknown skills (category OTHER) (flowchart)](diagrams/stage1/d36_4_5_unknown_skills_category_other_flowchart.png)
 ---
 
 ## 5. The extraction algorithm, formalized
@@ -3112,17 +2381,7 @@ Let C = ⋃ { [a,b) \| item ∈ I of category `CONTACT` } and let T ⊆ I be the
 1. **Contact wins:** T′ = { t ∈ T \| t.span ∩ C = ∅ }.
 2. **Leftmost, then longest:** sort T′ by (start ascending, length descending) and scan once, keeping an item when its start is ≥ the end of the last kept item.
 
-```mermaid
-flowchart TD
-    S["T′ sorted by (start ↑, length ↓)"] --> L["last_end = −1; kept = []"]
-    L --> N{"next item t?"}
-    N -->|no| Z["return the non-technology items + kept"]
-    N -->|yes| Q{"t.start ≥ last_end?"}
-    Q -->|yes| K["kept ← kept + t - last_end ← t.end"]
-    Q -->|no| D["drop t (overlaps a kept item)"]
-    K --> N
-    D --> N
-```
+![Diagram: 5.2 Overlap resolution (flowchart)](diagrams/stage1/d37_5_2_overlap_resolution_flowchart.png)
 
 This greedy rule is the classical **interval scheduling by earliest start**: it returns a set of pairwise-disjoint
 spans, and when two candidates start at the same place the longer one wins (`GitHub Actions` over `GitHub`).
@@ -3185,16 +2444,7 @@ patterns the scanning cost is O(19·|w|); the overlap resolution sorts the n can
 
 All tests live in `tests/` and run with `python -m pytest tests/test_stage1_*.py -v`.
 
-```mermaid
-flowchart BT
-    U["Unit level: patterns 66 tests, sections 10 tests, storage 2 tests"]
-    E["Engine level: extractor 32 tests on whole resumes"]
-    C["Contract level: contract 68 tests, Stage 1 can produce every symbol Stage 3 needs"]
-    P["Pipeline level: pipeline contract tests, Stage 1 to 2 to 3"]
-    U --> E
-    E --> C
-    C --> P
-```
+![Diagram: 6. Design of test cases (flowchart)](diagrams/stage1/d38_6_design_of_test_cases_flowchart.png)
 
 | Test file | What it checks | Scenarios |
 |---|---|---|

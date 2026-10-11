@@ -1,0 +1,12 @@
+flowchart TD
+    T["<b>Input text</b><br/>Wednesday Addams · 3 years of experience developing web applications.<br/>Technical Skills: JS, React.js, NodeJS, Postgres, Git."]
+    T --> S1["1 · Normalise line endings<br/>and detect sections"]
+    S1 --> S2["2 · Run the 19 RegexSpec<br/>(each over its scope)"]
+    S2 --> S3["3 · Resolve overlaps<br/>(contact wins, longest technology wins)"]
+    S3 --> S4["4 · Unknown skills of the<br/>Skills list → category OTHER"]
+    S4 --> S5["5 · Build the result"]
+    S5 --> R1["candidate_name = Wednesday Addams"]
+    S5 --> R2["years_of_experience = 3"]
+    S5 --> R3["raw_tokens = JS, React.js, NodeJS, Postgres, Git"]
+    R3 --> ST2(["to Stage 2"])
+    R2 --> ST2

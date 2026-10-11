@@ -1,0 +1,7 @@
+flowchart LR
+    A[/"Résumé text<br/>(plain .txt)"/] --> B["<b>Stage 1</b><br/>Regular expressions<br/>(this document)"]
+    B -->|"raw_tokens<br/>+ years"| C["<b>Stage 2</b><br/>Finite-state transducers"]
+    C -->|"canonical, sorted symbols"| D["<b>Stage 3</b><br/>Finite automata (DFA)"]
+    B -.->|"name, contact,<br/>education, titles"| E["<b>Stage 4</b><br/>Candidate DSL (CFG)"]
+    D -.->|"profile classification"| E
+    E --> F[/"HTML page of<br/>the candidate"/]

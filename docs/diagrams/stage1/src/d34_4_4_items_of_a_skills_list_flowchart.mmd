@@ -1,0 +1,5 @@
+flowchart LR
+    A["raw item<br/>'  - Frontend: React.js. '"] --> B["remove leading bullets<br/>^[\s\-*•·▪>]+"]
+    B --> C["remove a category label<br/>^[A-Za-z][A-Za-z &/]{1,30}:\s*"]
+    C --> D["remove trailing dots<br/>and blanks"]
+    D --> E["'React.js'"]

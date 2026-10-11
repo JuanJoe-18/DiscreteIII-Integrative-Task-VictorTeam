@@ -1,0 +1,21 @@
+stateDiagram-v2
+    direction LR
+    [*] --> q0
+    q0 --> q1 : O, Z
+    q0 --> q2 : R
+    q1 --> q2 : Digit
+    q1 --> q3 : Sep, Pl
+    q1 --> q4 : a
+    q1 --> q5 : y
+    q2 --> q3 : Sep, Pl
+    q2 --> q4 : a
+    q2 --> q5 : y
+    q3 --> q3 : Sep
+    q3 --> q4 : a
+    q3 --> q5 : y
+    q4 --> q6 : n, ñ
+    q5 --> q8 : ear, r
+    q6 --> q8 : o
+    q8 --> q10 : s
+    q8 --> [*]
+    q10 --> [*]
