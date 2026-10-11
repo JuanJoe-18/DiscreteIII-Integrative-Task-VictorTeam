@@ -49,7 +49,7 @@ export default function EvaluateScreen(p: Props) {
                 placeholder="Pega aquí el texto del currículo: perfil, experiencia y habilidades…"
                 className="w-full resize-y rounded-md border border-[#8c8c8c] p-3 text-[15px] leading-relaxed text-[#1d1d1d] placeholder:text-[#8c8c8c]" aria-describedby="resume-help" />
               <p id="resume-help" className="text-[13px] text-[#666]">
-                Se analizan solo las habilidades técnicas explícitas (lenguajes, frameworks, bases de datos, herramientas). El nombre y la descripción se usan únicamente para la tarjeta del candidato si aparecen como <span className="font-mono">Nombre:</span> y <span className="font-mono">Descripción:</span>.
+                Se analizan las habilidades técnicas explícitas. El nombre se reconoce al inicio del currículo o con la etiqueta <span className="font-mono">Nombre:</span>. Puedes añadir <span className="font-mono">Descripción:</span> para completar la tarjeta; los datos de contacto no cuentan como habilidades.
               </p>
             </div>
           ) : (

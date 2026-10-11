@@ -36,11 +36,16 @@ Para desarrollo con otro puerto, actualizar también el proxy en `vite.config.ts
 - `POST /api/evaluate`: JSON `{ "mode": "resume" | "tokens", "text": "..." }`.
   Devuelve resultados de los cuatro perfiles, secuencias, categorías observadas,
   requisitos faltantes, habilidades ajenas y trazas con los nombres reales de estados.
-- En currículo, se ejecuta el catálogo compartido de expresiones regulares de la etapa 1;
-  los términos ambiguos se restringen a la sección de habilidades y se conserva el match
-  más largo en solapamientos (por ejemplo, GitHub Actions frente a GitHub).
-- La normalización reutiliza la tabla de referencia de la etapa 2. El FST formal
-  y la DSL de la etapa 4 siguen pendientes y la interfaz lo indica.
+- En currículo, se ejecuta `extract_qualifications` de la etapa 1, incluidos los límites
+  de secciones y la exclusión de tecnologías dentro de datos de contacto. No existe
+  un segundo extractor de habilidades en la API.
+- `candidate` conserva `name`, `contact` (listas de email, phone, linkedin y github),
+  `education`, `job_titles` y `years_of_experience` (entero o null). Las etiquetas
+  `Nombre:`/`Name:` y `Descripción:`/`Description:` siguen disponibles para la tarjeta.
+- La normalización y el orden por perfil ejecutan los FST de la etapa 2. Cada DFA
+  recibe la proyección de la secuencia ordenada sobre su alfabeto; las habilidades
+  ajenas se conservan en `foreign` y las desconocidas siguen visibles en `normalized`.
+  La DSL con textX de la etapa 4 sigue pendiente.
 - En tokens, el orden y los símbolos se evalúan estrictamente; no se normalizan ni filtran.
 - Toda la clasificación se ejecuta con `pyformlang`. El frontend solo presenta resultados
   y dibuja la tabla de transiciones recibida; no mantiene otro motor de reconocimiento.

@@ -10,7 +10,11 @@ export type ProfileResult = {
 }
 export type Evaluation = {
   mode: 'resume' | 'tokens'; fragments: Fragment[]; normalized: string[];
-  results: ProfileResult[]; candidate: { name?: string; description?: string }; simulated: false;
+  results: ProfileResult[]; candidate: {
+    name?: string; description?: string;
+    contact?: { email: string[]; phone: string[]; linkedin: string[]; github: string[] };
+    education?: string[]; job_titles?: string[]; years_of_experience?: number | null;
+  }; simulated: false;
 }
 export const stateName = (state: string) => state
 export const isFinal = (profile: Profile, state: string) => profile.finalStates.includes(state)

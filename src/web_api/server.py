@@ -11,9 +11,8 @@ from pathlib import Path
 import re
 from urllib.parse import urlsplit
 
-from src.stage1_regex.models import Category, TECH_CATEGORIES, Scope
-from src.stage1_regex.patterns import DEFAULT_SPECS
-from src.stage2_fst.normalizer import normalize_qualifications
+from src.stage1_regex import extract_qualifications
+from src.stage2_fst.normalizer import normalize_qualifications, sort_to_canonical_order
 from src.stage3_classifier import ResumeClassifier
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -68,41 +67,26 @@ def profile_catalog():
 
 
 def extract_resume(text):
-    """Use the shared regex catalog; keep longest overlapping technology matches."""
-    skills = re.search(r'(?im)(?:^|\b)(?:technical skills|skills|habilidades|tecnolog[ií]as|experiencia técnica)\s*[:\n]', text)
-    skills_start = skills.end() if skills else len(text)
-    section_end = re.search(r'(?im)^\s*(?:education|educación|contact|contacto|references|referencias)\s*[:\n]', text[skills_start:])
-    skills_end = skills_start + section_end.start() if section_end else len(text)
-    matches, experience = [], []
-    for spec in DEFAULT_SPECS:
-        if spec.category not in TECH_CATEGORIES and spec.category != Category.EXPERIENCE:
-            continue
-        source = text[skills_start:skills_end] if spec.scope == Scope.SKILLS_SECTION else text
-        offset = skills_start if spec.scope == Scope.SKILLS_SECTION else 0
-        for match in spec.regex.finditer(source):
-            item = (offset + match.start(), offset + match.end(), match.group(spec.group))
-            if spec.name == 'YEARS_OF_EXPERIENCE':
-                experience.append(item)
-            elif spec.category in TECH_CATEGORIES:
-                matches.append(item)
-    selected = []
-    for item in sorted(matches, key=lambda m: (-(m[1] - m[0]), m[0])):
-        if not any(item[0] < old[1] and old[0] < item[1] for old in selected):
-            selected.append(item)
-    selected.sort()
-    fragments = []
-    normalized = []
-    if experience:
-        fragments.append({'text': experience[0][2], 'token': 'EXPERIENCE_PRESENT'})
-        normalized.append('EXPERIENCE_PRESENT')
-    for _, _, raw in selected:
-        token = normalize_qualifications([raw]).normalized_tokens[0]
-        fragments.append({'text': raw, 'token': token})
-        if token not in normalized:
-            normalized.append(token)
-    candidate = {}
-    for key, pattern in [('name', r'(?im)^\s*Nombre\s*:\s*(.+)$'),
-                         ('description', r'(?im)^\s*(?:Descripción|Descripcion|Perfil)\s*:\s*(.+)$')]:
+    """Adapt the complete Stage 1/2 results to the web response contract."""
+    extraction = extract_qualifications(text)
+    normalization = normalize_qualifications(
+        extraction.raw_tokens, extraction.years_of_experience,
+    )
+    fragments = [{'text': trace.raw, 'token': trace.canonical}
+                 for trace in normalization.traces]
+    normalized = list(dict.fromkeys(normalization.normalized_tokens))
+    candidate = {
+        'contact': extraction.contact,
+        'education': extraction.education,
+        'job_titles': extraction.job_titles,
+        'years_of_experience': extraction.years_of_experience,
+    }
+    if extraction.candidate_name:
+        candidate['name'] = extraction.candidate_name
+    # Keep the explicit labels used by existing UI examples. Technical extraction
+    # and section boundaries are handled exclusively by the shared extractor.
+    for key, pattern in [('name', r'(?im)^[ \t]*(?:Name|Nombre)[ \t]*:[ \t]*([^\r\n]+)'),
+                         ('description', r'(?im)^[ \t]*(?:Description|Descripción|Descripcion|Perfil)[ \t]*:[ \t]*([^\r\n]+)')]:
         match = re.search(pattern, text)
         if match:
             candidate[key] = match.group(1).strip()
@@ -127,10 +111,19 @@ def evaluate(payload):
         tokens = [token for token in re.split(r'[,\s]+', text.strip()) if token]
         if any(not re.fullmatch(r'[A-Z][A-Z0-9_]*', token) for token in tokens):
             raise ValueError('Usa símbolos canónicos en MAYÚSCULAS, separados por comas o espacios.')
-    report = CLASSIFIER.classify(tokens, prepare_input=mode == 'resume')
     results = []
-    for pid, result in report.results_by_profile.items():
-        profile = CLASSIFIER.automata[pid].profile
+    for pid, automaton in CLASSIFIER.automata.items():
+        profile = automaton.profile
+        if mode == 'resume':
+            # Stage 2 orders each profile with its FILTER transducers. Project
+            # onto the profile alphabet before strict Stage 3 recognition;
+            # unrelated skills remain visible as ignored evidence.
+            ordered = sort_to_canonical_order(tokens, pid)
+            sequence = [token for token in ordered if token in profile.alphabet]
+            result = CLASSIFIER.evaluate_profile(pid, sequence)
+            result.ignored_tokens = [token for token in tokens if token not in profile.alphabet]
+        else:
+            result = CLASSIFIER.evaluate_profile(pid, tokens)
         observed = [{'category': LABELS[cat.name], 'tokens': sorted(cat.skills.intersection(result.evaluated_tokens))}
                     for cat in profile.canonical_categories if cat.name in result.satisfied_categories]
         results.append({
