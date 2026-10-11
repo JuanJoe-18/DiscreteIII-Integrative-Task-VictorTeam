@@ -14,11 +14,12 @@
 3. **Etapa 3 — Reconocimiento de Patrones de Cualificación:** Autómatas Finitos Deterministas (DFA) implementados con `pyformlang`.
 4. **Etapa 4 — Lenguaje de Especificación del Candidato:** Gramáticas Libres de Contexto (CFG) con `textX` y visualización HTML.
 
-**Estado actual:** la Etapa 3 contiene los cuatro DFA implementados en `pyformlang`.
-Las etapas 1 y 2 son implementaciones de referencia para probar la integración;
-la normalización actual usa un diccionario, pendiente de sustituir por FST reales.
-La Etapa 4 todavía no implementa la DSL con `textX`. La lista anterior describe
-la arquitectura requerida, no afirma que las cuatro etapas estén terminadas.
+**Estado actual:** las etapas 1, 2 y 3 implementan extracción con `re`, normalización
+y ordenamiento con FST reales, y cuatro DFA en `pyformlang`. La API React reutiliza
+estos módulos. La Etapa 4 ya incluye una DSL con gramática textX, validación de
+sintaxis y restricciones de dominio, un modelo estructurado y ejemplos ejecutables.
+Su conexión al pipeline y la generación de HTML/Markdown siguen pendientes.
+Consulta [la gramática, sus decisiones y pruebas](docs/stage4_grammar.md).
 
 ---
 
@@ -78,6 +79,16 @@ pip install -r requirements.txt
 ```bash
 python -m pytest tests -v
 ```
+
+Para validar un perfil escrito en la DSL de la etapa 4:
+
+```bash
+python -m src.stage4_grammar docs/examples/wednesday.resume
+```
+
+Si el documento es válido, imprime sus datos estructurados como JSON. En caso de
+error devuelve un código de salida distinto de cero y señala la línea y columna.
+`docs/examples/invalid_candidate.resume` permite demostrar un rechazo sintáctico.
 
 ### 4. Lanzar la Interfaz Web (Streamlit)
 ```bash

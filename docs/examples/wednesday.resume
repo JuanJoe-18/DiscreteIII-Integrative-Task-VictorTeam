@@ -1,0 +1,46 @@
+// Valid structured candidate. No skills are inferred from the candidate's name.
+candidate {
+  personal {
+    name "Wednesday Addams";
+    summary "Developer with experience building web applications.";
+    location "Jericho";
+  }
+  contact {
+    email "wednesday.addams@example.com";
+    phone "+57 300 123 4567";
+    github "github.com/wadd";
+  }
+  experience {
+    total_years 3;
+    entry {
+      title "Web Application Developer";
+      organization "Nevermore Academy";
+      period "2023-2026";
+      description "Built interfaces and services using JavaScript and Node.js.";
+    }
+    entry {
+      title "Software Developer";
+      organization "Independent projects";
+    }
+  }
+  education {
+    entry {
+      qualification "Bachelor of Science in Computer Science";
+      institution "Example University";
+    }
+    entry {
+      qualification "AWS Certified Solutions Architect";
+    }
+  }
+  skills {
+    skill JAVASCRIPT;
+    skill REACT;
+    skill NODE_JS;
+    skill POSTGRESQL;
+    skill GIT;
+    unrecognized "Figma";
+  }
+  classification {
+    accepted full_stack;
+  }
+}

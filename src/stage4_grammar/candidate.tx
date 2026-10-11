@@ -1,0 +1,104 @@
+// ResumeLens candidate-profile language. Sections and scalar fields have a fixed order.
+Candidate:
+    'candidate' '{'
+        personal=Personal
+        contact=ContactSection
+        experience=ExperienceSection
+        education=EducationSection
+        skills=SkillSection
+        classification=Classification
+    '}'
+;
+
+Personal:
+    'personal' '{'
+        ('name' name=Text ';')?
+        ('summary' summary=Text ';')?
+        ('location' location=Text ';')?
+    '}'
+;
+
+ContactSection:
+    'contact' '{' entries*=Contact '}'
+;
+
+Contact:
+    kind=ContactKind value=Text ';'
+;
+
+ContactKind:
+    'email' | 'phone' | 'linkedin' | 'github'
+;
+
+ExperienceSection:
+    'experience' '{'
+        ('total_years' total_years=NonNegativeInt ';')?
+        entries*=Experience
+    '}'
+;
+
+Experience:
+    'entry' '{'
+        'title' title=Text ';'
+        ('organization' organization=Text ';')?
+        ('period' period=Text ';')?
+        ('description' description=Text ';')?
+    '}'
+;
+
+EducationSection:
+    'education' '{' entries*=Education '}'
+;
+
+Education:
+    'entry' '{'
+        'qualification' qualification=Text ';'
+        ('institution' institution=Text ';')?
+        ('period' period=Text ';')?
+    '}'
+;
+
+SkillSection:
+    'skills' '{' entries*=Skill '}'
+;
+
+Skill:
+    KnownSkill | UnrecognizedSkill
+;
+
+KnownSkill:
+    'skill' token=CanonicalToken ';'
+;
+
+UnrecognizedSkill:
+    'unrecognized' value=Text ';'
+;
+
+Classification:
+    'classification' '{' entries*=AcceptedProfile '}'
+;
+
+AcceptedProfile:
+    'accepted' profile=ProfileId ';'
+;
+
+ProfileId:
+    'full_stack' | 'machine_learning' | 'cloud_devops' | 'data_scientist'
+;
+
+CanonicalToken:
+    /[A-Z][A-Z0-9_]*/
+;
+
+NonNegativeInt:
+    /(?:0|[1-9][0-9]*)/
+;
+
+// JSON-style strings: explicit escapes, no raw control characters.
+Text:
+    /"(?:[^"\\\x00-\x1f]|\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4}))*"/
+;
+
+Comment:
+    /\/\/[^\n\r]*/
+;

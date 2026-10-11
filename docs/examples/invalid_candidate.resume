@@ -1,0 +1,9 @@
+// Invalid: normalized skill symbols must be uppercase.
+candidate {
+  personal { name "Example Candidate"; }
+  contact {}
+  experience {}
+  education {}
+  skills { skill javascript; }
+  classification {}
+}

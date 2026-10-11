@@ -45,7 +45,9 @@ Para desarrollo con otro puerto, actualizar también el proxy en `vite.config.ts
 - La normalización y el orden por perfil ejecutan los FST de la etapa 2. Cada DFA
   recibe la proyección de la secuencia ordenada sobre su alfabeto; las habilidades
   ajenas se conservan en `foreign` y las desconocidas siguen visibles en `normalized`.
-  La DSL con textX de la etapa 4 sigue pendiente.
+  La DSL con textX de la etapa 4 ya tiene un validador independiente
+  (`python -m src.stage4_grammar docs/examples/wednesday.resume`); su generación
+  automática y visualización desde esta interfaz siguen pendientes.
 - En tokens, el orden y los símbolos se evalúan estrictamente; no se normalizan ni filtran.
 - Toda la clasificación se ejecuta con `pyformlang`. El frontend solo presenta resultados
   y dibuja la tabla de transiciones recibida; no mantiene otro motor de reconocimiento.

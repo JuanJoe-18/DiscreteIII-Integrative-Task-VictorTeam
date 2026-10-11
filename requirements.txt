@@ -5,3 +5,4 @@ pydot>=3.0.0
 graphviz>=0.21
 pytest>=8.0.0
 streamlit>=1.40.0
+textX>=4.2,<5
