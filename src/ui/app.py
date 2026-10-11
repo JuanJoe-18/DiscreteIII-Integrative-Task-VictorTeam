@@ -234,7 +234,11 @@ with tab_eval:
         extraction = extract_qualifications(cv_input_text)
         
         # Stage 2: Normalization & Canonical Sorting
-        normalization = normalize_and_sort(extraction.raw_tokens, profile_id=target_profile_pipeline)
+        normalization = normalize_and_sort(
+            extraction.raw_tokens,
+            profile_id=target_profile_pipeline,
+            years_of_experience=extraction.years_of_experience,
+        )
 
         if skip_stage2:
             cleaned_tokens = extraction.raw_tokens

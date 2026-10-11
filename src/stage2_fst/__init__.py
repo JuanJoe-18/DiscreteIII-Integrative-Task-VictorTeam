@@ -2,14 +2,18 @@
 
 from src.stage2_fst.normalizer import (
     NormalizationResult,
-    normalize_qualifications,
-    sort_to_canonical_order,
+    TokenTrace,
     normalize_and_sort,
+    normalize_qualifications,
+    normalize_token,
+    sort_to_canonical_order,
 )
 
 __all__ = [
     "NormalizationResult",
-    "normalize_qualifications",
-    "sort_to_canonical_order",
+    "TokenTrace",
     "normalize_and_sort",
+    "normalize_qualifications",
+    "normalize_token",
+    "sort_to_canonical_order",
 ]
