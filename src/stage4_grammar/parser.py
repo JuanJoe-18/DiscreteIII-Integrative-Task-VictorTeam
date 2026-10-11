@@ -8,6 +8,7 @@ do not rerun the DFA or certify that an accepted profile is supported by skills.
 import json
 from functools import lru_cache
 from pathlib import Path
+from threading import RLock
 
 from textx import TextXError, TextXSemanticError, get_location, metamodel_from_file
 
@@ -16,6 +17,7 @@ from src.stage2_fst.aliases import all_canonical_tokens
 from src.stage4_grammar.models import CandidateProfile, Contact, Education, Experience
 
 GRAMMAR_PATH = Path(__file__).with_name('candidate.tx')
+_PARSE_LOCK = RLock()
 _CONTACT_SPECS = {
     'email': 'EMAIL', 'phone': 'PHONE',
     'linkedin': 'LINKEDIN_URL', 'github': 'GITHUB_URL',
@@ -46,6 +48,8 @@ def _check_text_fields(obj, *fields):
         value = getattr(obj, field)
         if value is not None and not value.strip():
             _reject(obj, f'{field} must not be blank; omit an unknown optional field.')
+        if value is not None and any(0xD800 <= ord(char) <= 0xDFFF for char in value):
+            _reject(obj, f'{field} contains an unpaired Unicode surrogate.')
 
 
 def _check_unique(entries, key, label):
@@ -103,7 +107,10 @@ def parse_profile(source: str, *, filename: str | None = None) -> CandidateProfi
         raise TypeError('The candidate profile source must be a string.')
     metamodel = _metamodel()
     try:
-        model = metamodel.model_from_str(source, file_name=filename)
+        # The HTTP server can validate multiple documents concurrently. Protect
+        # the cached metamodel and its processors from shared parser state.
+        with _PARSE_LOCK:
+            model = metamodel.model_from_str(source, file_name=filename)
     except TextXError as error:
         raise ProfileValidationError(
             error.message,
