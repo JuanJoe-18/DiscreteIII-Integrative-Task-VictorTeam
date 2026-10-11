@@ -146,9 +146,10 @@ def normalize_qualifications(raw_tokens: List[str]) -> NormalizationResult:
         if not clean:
             continue
 
-        # Keep raw numeric experience digits directly (e.g. '1'..'9')
+        # Abstract numeric experience into one finite symbol; exact years remain Stage 1 metadata.
         if clean.isdigit():
-            normalized.append(clean)
+            normalized.append("EXPERIENCE_PRESENT")
+            transformations[clean] = "EXPERIENCE_PRESENT"
             continue
 
         key = clean.upper()
@@ -190,7 +191,7 @@ def sort_to_canonical_order(
     # Filter out numeric experience tokens if this profile does not support an EXPERIENCE category
     has_experience_cat = any(cat.name == "EXPERIENCE" for cat in profile.canonical_categories)
     if not has_experience_cat:
-        normalized_tokens = [t for t in normalized_tokens if not t.isdigit() and t != r"\d"]
+        normalized_tokens = [t for t in normalized_tokens if t != "EXPERIENCE_PRESENT"]
 
     # Build category rank mapping
     category_order = {cat.name: idx for idx, cat in enumerate(profile.canonical_categories)}
@@ -201,9 +202,6 @@ def sort_to_canonical_order(
     }
 
     def token_sort_key(token: str) -> tuple[int, int]:
-        # Experience digits get lowest rank (-1)
-        if token.isdigit() or token == r"\d":
-            return (-1, 0)
         cat_name = skill_to_cat.get(token)
         if cat_name and cat_name in category_order:
             return (category_order[cat_name], 0)

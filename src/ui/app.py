@@ -100,7 +100,7 @@ SAMPLE_RESUMES = {
         "JAVASCRIPT", "REACT", "NODE_JS", "POSTGRESQL", "GIT"
     ],
     "Wednesday Addams (Full Stack - Con 3 años exp)": [
-        "3", "JAVASCRIPT", "REACT", "NODE_JS", "POSTGRESQL", "GIT"
+        "EXPERIENCE_PRESENT", "JAVASCRIPT", "REACT", "NODE_JS", "POSTGRESQL", "GIT"
     ],
     "Mary Jane Watson (Machine Learning - Aceptado)": [
         "PYTHON", "PANDAS", "NUMPY", "SCIKIT_LEARN", "TENSORFLOW", "SQL", "GIT"
@@ -201,6 +201,7 @@ with tab_eval:
         horizontal=True,
     )
 
+    skip_stage2 = False
     if "Pipeline Completo" in eval_mode:
         st.subheader("1. Procesamiento End-to-End desde Texto de Currículum")
         col_cv_preset, col_profile_target = st.columns([2, 1])
@@ -299,7 +300,9 @@ with tab_eval:
 
     # Classification Report
     st.subheader("2. Veredicto del Motor de Autómatas por Perfil")
-    report = classifier.classify(cleaned_tokens)
+    report = classifier.classify(
+        cleaned_tokens, prepare_input=("Pipeline Completo" in eval_mode and not skip_stage2)
+    )
 
     cols = st.columns(4)
     for idx, (pid, pdef) in enumerate(PROFILES_REGISTRY.items()):
@@ -315,13 +318,16 @@ with tab_eval:
                 st.error(f"Estado: `{result.final_state}`")
             
             with st.expander("Ver diagnóstico"):
+                st.write(f"**Secuencia del perfil:** {result.evaluated_tokens}")
+                if result.ignored_tokens:
+                    st.write(f"**Habilidades ajenas al perfil:** {result.ignored_tokens}")
                 if result.is_accepted:
                     st.write("🎉 Cumple con todas las categorías obligatorias en orden canónico.")
-                    st.write(f"**Categorías satisfechas:** {', '.join(result.satisfied_categories)}")
+                    st.write(f"**Categorías observadas:** {', '.join(result.satisfied_categories)}")
                 else:
                     st.write(f"**Causa:** {result.rejection_reason}")
                     if result.missing_categories:
-                        st.write(f"**Faltan:** {', '.join(result.missing_categories)}")
+                        st.write(f"**Requisitos faltantes:** {', '.join(result.missing_categories)}")
 
     st.divider()
 
@@ -373,7 +379,7 @@ with tab_eval:
     # Optional Excalidraw diagram viewer
     diagram_path = PROJECT_ROOT / "docs" / "diagrams" / f"{selected_inspect_pid}.png"
     if diagram_path.exists():
-        st.markdown("##### Diagrama Manual Adjunto (Excalidraw)")
+        st.markdown("##### Diagrama exportado desde el DFA")
         st.image(str(diagram_path), caption=f"Diagrama de {inspected_auto.profile.title}")
 
 
@@ -430,8 +436,8 @@ with tab_formal:
 
         diag_file = PROJECT_ROOT / "docs" / "diagrams" / f"{selected_formal_pid}.png"
         if diag_file.exists():
-            st.markdown("#### Diagrama Manual (Excalidraw)")
-            st.image(str(diag_file), caption=f"Diagrama Excalidraw - {f_def.title}")
+            st.markdown("#### Diagrama exportado desde el DFA")
+            st.image(str(diag_file), caption=f"Diagrama DFA - {f_def.title}")
 
     st.divider()
     st.markdown("#### 5. Tabla de Transiciones Formales $\\delta(q, s)$")
@@ -448,16 +454,16 @@ with tab_formal:
 with tab_tests:
     st.subheader("🧪 Ejecución de Pruebas Automatizadas (Pytest)")
     st.markdown(
-        "Ejecuta en tiempo real la suite completa de pruebas unitarias (`tests/test_stage3.py`) "
+        "Ejecuta en tiempo real la suite completa de pruebas unitarias (`tests`) "
         "para validar los casos de aceptación, rechazo, orden canónico y 5-tuplas."
     )
 
     if st.button("▶️ Ejecutar Pruebas con Pytest", type="primary"):
         import subprocess
 
-        with st.spinner("Ejecutando pytest tests/test_stage3.py..."):
+        with st.spinner("Ejecutando pytest tests..."):
             proc = subprocess.run(
-                [sys.executable, "-m", "pytest", "tests/test_stage3.py", "-v"],
+                [sys.executable, "-m", "pytest", "tests", "-v"],
                 capture_output=True,
                 text=True,
                 cwd=str(PROJECT_ROOT),

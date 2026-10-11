@@ -26,6 +26,18 @@ class ProfileDefinition:
     canonical_categories: List[Category]
 
     @property
+    def required_groups(self) -> Dict[str, Set[str]]:
+        """Each mandatory requirement may be met by one of its categories."""
+        if self.profile_id == "full_stack":
+            return {
+                "FE_LANGUAGE": {"FE_LANGUAGE"},
+                "BACKEND": {"BE_LANGUAGE", "BE_FRAMEWORK"},
+                "DATABASE": {"DATABASE_SQL", "DATABASE_NOSQL"},
+                "VERSION_CONTROL": {"VERSION_CONTROL"},
+            }
+        return {cat.name: {cat.name} for cat in self.canonical_categories}
+
+    @property
     def alphabet(self) -> Set[str]:
         """Returns the complete input alphabet Sigma for this profile."""
         all_skills: Set[str] = set()
@@ -52,8 +64,8 @@ FULL_STACK_PROFILE = ProfileDefinition(
     canonical_categories=[
         Category(
             name="EXPERIENCE",
-            description="Años de experiencia profesional o rango numérico (\\d)",
-            skills={"\\d", "1", "2", "3", "4", "5", "6", "7", "8", "9"},
+            description="Experiencia reportada (opcional; sin umbral de años)",
+            skills={"EXPERIENCE_PRESENT"},
         ),
         Category(
             name="FE_LANGUAGE",

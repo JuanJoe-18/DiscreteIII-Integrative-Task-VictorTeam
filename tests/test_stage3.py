@@ -42,16 +42,16 @@ def test_full_stack_multiple_skills_accepted(classifier):
 
 
 def test_full_stack_with_numeric_experience_accepted(classifier):
-    """Candidate starts with numeric years of experience range \\d."""
-    # With numeric digit (e.g. Wednesday Addams: 3 years of experience)
-    tokens_digit = ["3", "JAVASCRIPT", "REACT", "NODE_JS", "POSTGRESQL", "GIT"]
+    """Candidate starts with the canonical optional experience symbol."""
+    # Normalized experience; exact years are metadata.
+    tokens_digit = ["EXPERIENCE_PRESENT", "JAVASCRIPT", "REACT", "NODE_JS", "POSTGRESQL", "GIT"]
     res1 = classifier.evaluate_profile("full_stack", tokens_digit)
     assert res1.is_accepted is True
     assert res1.status == ClassificationStatus.ACCEPTED
     assert res1.final_state == "q_version_control"
 
-    # With range token \d
-    tokens_range = [r"\d", "TYPESCRIPT", "ANGULAR", "DJANGO", "MYSQL", "GITHUB"]
+    # Same token with another valid skill path.
+    tokens_range = ["EXPERIENCE_PRESENT", "TYPESCRIPT", "ANGULAR", "DJANGO", "MYSQL", "GITHUB"]
     res2 = classifier.evaluate_profile("full_stack", tokens_range)
     assert res2.is_accepted is True
     assert res2.status == ClassificationStatus.ACCEPTED

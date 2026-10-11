@@ -226,7 +226,7 @@ def export_diagrams() -> None:
 
     function renderCurrent() {{
       const info = data[currentPid];
-      profileTitle.innerHTML = `<strong>${{info.title}}</strong> (${{info.domain}}) &bull; <em>Una arista por símbolo; rango numérico \\d colapsado</em>`;
+      profileTitle.innerHTML = `<strong>${{info.title}}</strong> (${{info.domain}}) &bull; <em>Una arista por símbolo; transiciones a trampa agrupadas por complemento de Σ</em>`;
       
       downloadPngLink.href = info.png_file;
       downloadPngLink.download = info.png_file;

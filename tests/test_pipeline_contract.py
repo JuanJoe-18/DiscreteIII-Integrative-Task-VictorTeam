@@ -53,8 +53,7 @@ def test_stage3_rejects_raw_tokens_without_stage2(classifier):
     raw_tokens = ["JS", "React.js", "NodeJS", "Postgres", "Git"]
 
     # Passing raw tokens directly to Stage 3 without Stage 2 FST normalization
-    report = classifier.classify(raw_tokens)
-    fs_result = report.results_by_profile["full_stack"]
+    fs_result = classifier.evaluate_profile("full_stack", raw_tokens)
 
     # Must be rejected because 'JS' and 'React.js' are not in the formal alphabet
     assert not fs_result.is_accepted

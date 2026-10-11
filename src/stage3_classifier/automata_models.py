@@ -43,8 +43,7 @@ class FormalTuple:
             f"- **q₀ (Estado Inicial):** {self.initial_state}\n"
             f"- **F (Estados de Aceptación):** {{{', '.join(sorted(self.final_states))}}}\n"
             f"- **δ (Transiciones de Avance y Bucles):**\n"
-            + "\n".join(delta_lines[:15])
-            + (f"\n  - ... ({len(delta_lines)} transiciones en total)" if len(delta_lines) > 15 else "")
+            + "\n".join(delta_lines)
         )
 
 
@@ -56,6 +55,17 @@ class ProfileAutomaton:
         self.dfa = DeterministicFiniteAutomaton()
         self.state_names: List[str] = []
         self._build_automaton()
+        self._complete_with_trap()
+
+    def _complete_with_trap(self) -> None:
+        """Complete delta on Q x Sigma with an explicit absorbing state."""
+        trap = State("q_trap")
+        self.state_objects["q_trap"] = trap
+        for state in self.state_objects.values():
+            for token in self.profile.alphabet:
+                symbol = Symbol(token)
+                if not self.dfa(state, symbol):
+                    self.dfa.add_transition(state, symbol, trap)
 
     def _build_automaton(self) -> None:
         """Constructs the DFA states and transitions."""
@@ -107,7 +117,7 @@ class ProfileAutomaton:
         
         States (11 states):
         - q0: Initial state
-        - q_experience: Verified experience via numeric range \\d (1..9)
+        - q_experience: Optional reported experience (EXPERIENCE_PRESENT)
         - q_fe_language: Client-side languages (JavaScript, TypeScript, HTML, CSS)
         - q_fe_framework: UI Frameworks (React, Angular, Vue, Svelte, NextJS)
         - q_be_language: Backend runtime/languages (NodeJS, Python, Java, C#, Go)
@@ -141,7 +151,7 @@ class ProfileAutomaton:
         cats = {c.name: c.skills for c in self.profile.canonical_categories}
 
         # 1. From q0:
-        # Numeric range \d (e.g., \d or digits 0-9) leads to q_experience
+        # Optional finite experience token leads to q_experience
         for d in cats["EXPERIENCE"]:
             self.dfa.add_transition(q0, Symbol(d), self.state_objects["q_experience"])
         # Direct entrance on Frontend Language if experience is omitted
@@ -237,12 +247,12 @@ class ProfileAutomaton:
 
     def get_formal_tuple(self) -> FormalTuple:
         """Returns the formal mathematical 5-tuple M = (Q, Sigma, delta, q0, F)."""
-        states_set = set(self.state_names)
+        states_set = {str(state.value) for state in self.dfa.states}
         alphabet_set = self.profile.alphabet
         trans_dict: Dict[Tuple[str, str], str] = {}
 
         # Extract transitions from pyformlang DFA
-        for src_state, sym_dict in self.dfa._transition_function._transitions.items():
+        for src_state, sym_dict in self.dfa.to_dict().items():
             src_name = str(src_state.value)
             for sym, dest in sym_dict.items():
                 sym_name = str(sym.value)

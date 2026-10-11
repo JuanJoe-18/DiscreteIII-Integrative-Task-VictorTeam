@@ -7,12 +7,12 @@ and human-readable diagnostic explanations.
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
-from pyformlang.finite_automaton import State, Symbol
+from pyformlang.finite_automaton import Symbol
 
-from src.stage3_classifier.automata_models import ProfileAutomaton, build_all_automata
-from src.stage3_classifier.profiles import PROFILES_REGISTRY, ProfileDefinition
+from src.stage3_classifier.automata_models import build_all_automata
+from src.stage3_classifier.profiles import PROFILES_REGISTRY
 
 
 class ClassificationStatus(str, Enum):
@@ -41,6 +41,8 @@ class ProfileEvaluationResult:
     final_state: str
     expected_final_state: str
     trace: List[StepTransition]
+    evaluated_tokens: List[str] = field(default_factory=list)
+    ignored_tokens: List[str] = field(default_factory=list)
     rejection_reason: Optional[str] = None
     missing_categories: List[str] = field(default_factory=list)
     satisfied_categories: List[str] = field(default_factory=list)
@@ -100,27 +102,16 @@ class ResumeClassifier:
 
             # Look up pyformlang transition for (current_state, Symbol(token))
             sym = Symbol(token)
-            next_state_obj = dfa._transition_function._transitions.get(
-                current_state_obj, {}
-            ).get(sym, None)
-
-            if next_state_obj is not None:
-                next_state_name = str(next_state_obj.value)
-
-                trace.append(
-                    StepTransition(
-                        step_number=step_idx,
-                        source_state=current_state_name,
-                        symbol=token,
-                        target_state=next_state_name,
-                        category=category,
-                        is_valid_transition=True,
-                    )
-                )
+            destinations = dfa(current_state_obj, sym)
+            next_state_obj = destinations[0] if destinations else None
+            next_state_name = str(next_state_obj.value) if next_state_obj else "q_trap"
+            if next_state_name != "q_trap":
+                trace.append(StepTransition(
+                    step_idx, current_state_name, token, next_state_name, category, True
+                ))
                 current_state_obj = next_state_obj
                 current_state_name = next_state_name
             else:
-                # Transition not defined: move to q_trap
                 is_trapped = True
                 trace.append(
                     StepTransition(
@@ -147,40 +138,17 @@ class ResumeClassifier:
         is_accepted = (not is_trapped) and (current_state_name == final_state_name)
         status = ClassificationStatus.ACCEPTED if is_accepted else ClassificationStatus.REJECTED
 
-        # Determine satisfied and missing categories
-        categories = profile_def.canonical_categories
-        satisfied: List[str] = []
-        missing: List[str] = []
-
-        if is_accepted:
-            satisfied = [cat.name for cat in categories]
-        else:
-            # Find how far the candidate got
-            if current_state_name in profile_auto.state_names:
-                state_idx = profile_auto.state_names.index(current_state_name)
-                satisfied = [cat.name for cat in categories[:state_idx]]
-                missing = [cat.name for cat in categories[state_idx:]]
-            else:
-                # If trapped, examine last valid state in trace
-                last_valid_state = "q0"
-                for step in trace:
-                    if step.is_valid_transition:
-                        last_valid_state = step.target_state
-                state_idx = (
-                    profile_auto.state_names.index(last_valid_state)
-                    if last_valid_state in profile_auto.state_names
-                    else 0
-                )
-                satisfied = [cat.name for cat in categories[:state_idx]]
-                missing = [cat.name for cat in categories[state_idx:]]
-
-            if not rejection_reason:
-                if len(tokens) == 0:
-                    rejection_reason = "Secuencia de calificaciones vacía. Ninguna competencia provista."
-                else:
-                    rejection_reason = (
-                        f"Faltan competencias obligatorias para completar el perfil: {', '.join(missing)}."
-                    )
+        # Observed competencies are independent of execution order or optional bypasses.
+        observed = {profile_def.get_category_for_skill(token) for token in tokens}
+        satisfied = [cat.name for cat in profile_def.canonical_categories if cat.name in observed]
+        missing = [name for name, alternatives in profile_def.required_groups.items()
+                   if not alternatives.intersection(observed)]
+        if not is_accepted and not rejection_reason:
+            rejection_reason = (
+                "Secuencia de calificaciones vacía. Ninguna competencia provista."
+                if not tokens else
+                f"Faltan competencias obligatorias para completar el perfil: {', '.join(missing)}."
+            )
 
         return ProfileEvaluationResult(
             profile_id=profile_id,
@@ -190,19 +158,30 @@ class ResumeClassifier:
             final_state=current_state_name,
             expected_final_state=final_state_name,
             trace=trace,
+            evaluated_tokens=list(tokens),
             rejection_reason=rejection_reason,
             missing_categories=missing,
             satisfied_categories=satisfied,
         )
 
-    def classify(self, tokens: List[str]) -> ResumeClassificationReport:
-        """Evaluates tokens against all 4 profiles and compiles a comprehensive report."""
+    def classify(self, tokens: List[str], *, prepare_input: bool = True) -> ResumeClassificationReport:
+        """Classifies normalized skills using a separate projection/order per profile.
+
+        Unrelated skills are reported, never used to satisfy a requirement.
+        Set prepare_input=False for strict word recognition without preparation.
+        """
         results: Dict[str, ProfileEvaluationResult] = {}
         accepted: List[str] = []
         rejected: List[str] = []
 
         for pid in PROFILES_REGISTRY.keys():
-            res = self.evaluate_profile(pid, tokens)
+            profile = self.automata[pid].profile
+            rank = {skill: index for index, cat in enumerate(profile.canonical_categories)
+                    for skill in cat.skills}
+            relevant = sorted((token for token in tokens if token in rank), key=rank.__getitem__)
+            res = self.evaluate_profile(pid, relevant if prepare_input else tokens)
+            if prepare_input:
+                res.ignored_tokens = [token for token in tokens if token not in rank]
             results[pid] = res
             if res.is_accepted:
                 accepted.append(res.profile_title)

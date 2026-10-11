@@ -1,9 +1,15 @@
-# Diagramas de Autómatas (Excalidraw / Dibujo Manual)
+# Diagramas de los DFA
 
-Coloca aquí las imágenes exportadas de tus diagramas para cada perfil profesional. El Frontend (Streamlit) y la documentación las cargarán automáticamente.
+Estos archivos se generan desde las transiciones reales de `pyformlang`, mediante:
 
-### Nombres de archivo esperados:
-- `full_stack.png`: Diagrama de transición para Full Stack Developer ($\mathcal{M}_{FS}$).
-- `machine_learning.png`: Diagrama de transición para Machine Learning Engineer ($\mathcal{M}_{ML}$).
-- `cloud_devops.png`: Diagrama de transición para Cloud & DevOps Engineer ($\mathcal{M}_{DEVOPS}$).
-- `data_scientist.png`: Diagrama de transición para Data Scientist ($\mathcal{M}_{DS}$).
+```powershell
+python scripts/export_diagrams.py
+```
+
+Cada perfil incluye DOT, SVG y PNG. `ver_diagramas.html` permite verlos sin conexión.
+Las aristas sólidas muestran los símbolos individuales. Una arista discontinua
+«otros símbolos de Σ» agrupa exactamente los símbolos del alfabeto que no figuran
+en las aristas sólidas del estado de origen; todos llevan a `q_trap`.
+En `q_trap`, el bucle Σ incluye todo el alfabeto. El estado aceptor tiene doble círculo.
+El exportador actual utiliza QuickChart para renderizar SVG/PNG y requiere conexión
+al regenerarlos; los diagramas ya exportados y el visor funcionan sin conexión.

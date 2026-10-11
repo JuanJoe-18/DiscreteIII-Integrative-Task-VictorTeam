@@ -14,6 +14,12 @@
 3. **Etapa 3 — Reconocimiento de Patrones de Cualificación:** Autómatas Finitos Deterministas (DFA) implementados con `pyformlang`.
 4. **Etapa 4 — Lenguaje de Especificación del Candidato:** Gramáticas Libres de Contexto (CFG) con `textX` y visualización HTML.
 
+**Estado actual:** la Etapa 3 contiene los cuatro DFA implementados en `pyformlang`.
+Las etapas 1 y 2 son implementaciones de referencia para probar la integración;
+la normalización actual usa un diccionario, pendiente de sustituir por FST reales.
+La Etapa 4 todavía no implementa la DSL con `textX`. La lista anterior describe
+la arquitectura requerida, no afirma que las cuatro etapas estén terminadas.
+
 ---
 
 ##  Perfiles Profesionales Soportados (4 Perfiles)
@@ -70,7 +76,7 @@ pip install -r requirements.txt
 
 ### 3. Ejecutar las pruebas unitarias
 ```bash
-python -m pytest tests/test_stage3.py -v
+python -m pytest tests -v
 ```
 
 ### 4. Lanzar la Interfaz Web (Streamlit)
@@ -91,10 +97,32 @@ La interfaz se abrirá en `http://localhost:8501`, permitiendo:
 Para cada autómata $i \in \{FS, ML, DEVOPS, DS\}$:
 $$\mathcal{M}_i = (Q_i, \Sigma_i, \delta_i, q_0, F_i)$$
 
-- **$Q$:** Estados secuenciales que certifican cada nivel de competencia más el estado trampa $q_{trap}$.
+- **$Q$:** Estados que representan el último bloque de competencias consumido más el estado trampa explícito $q_{trap}$.
 - **$\Sigma$:** Alfabeto de tecnologías normalizadas clasificadas por categorías disjuntas.
-- **$\delta$:** Función de transición determinista con *self-loops* para múltiples tecnologías de una categoría y transiciones hacia adelante para avanzar al siguiente requisito.
+- **$\delta$:** Función total y determinista con bucles por categoría, avances, saltos opcionales en Full Stack y rechazo hacia el estado trampa.
 - **$q_0$:** Estado inicial.
 - **$F$:** Estado de aceptación final que certifica la posesión de todas las competencias obligatorias.
 
 *Para ver la formalización matemática completa con tablas de transición y diagramas de estados, consultar [`docs/stage3_formalization.md`](docs/stage3_formalization.md).*
+
+`ResumeClassifier.classify(tokens)` recibe habilidades normalizadas y prepara
+una secuencia relevante en el orden de cada perfil. Puede aceptar varios perfiles;
+las habilidades ajenas quedan registradas y no satisfacen requisitos.
+`evaluate_profile(profile_id, tokens)` y `classify(tokens, prepare_input=False)`
+realizan reconocimiento estricto, sin corregir el orden ni filtrar símbolos.
+
+Full Stack exige lenguaje/tecnología frontend, backend (lenguaje/entorno o framework),
+base de datos (SQL o NoSQL) y control de versiones. Las demás categorías son opcionales.
+Los otros perfiles exigen al menos una habilidad por cada categoría definida.
+Los años de experiencia se normalizan a `EXPERIENCE_PRESENT`, opcional; el valor exacto
+se conserva en los metadatos de extracción. No se exige un mínimo de años.
+
+Para mantener la documentación alineada con los modelos:
+
+```powershell
+python scripts/export_formalization.py
+python scripts/export_diagrams.py
+```
+
+La formalización incluye la verificación de cada requisito del punto 3 frente
+al enunciado disponible en `docs/Initial Doc.md`. El exportador de imágenes requiere conexión.
