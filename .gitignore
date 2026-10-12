@@ -19,4 +19,4 @@ ENV/
 
 # React frontend
 frontend/node_modules/
-frontend/dist/
+# frontend/dist/ is committed on purpose: a prebuilt copy lets the interface run with Python only

@@ -112,8 +112,7 @@ def export_formalization():
         'instructor annex that is not in the repository.', '',
         'All four stages are integrated: extraction with re, normalization and ordering with '
         'pyformlang FSTs, DFA recognition, and a textX-validated DSL before HTML generation. '
-        'The delivery matrix in `delivery_checklist.md` links the poster and literature review, '
-        'and identifies pending external checks and oral-presentation requirements. '
+        'The literature review is in `literature_review.md`. '
         'Stages 1 and 2 are documented in `stage1_regex.md` and `stage2_fst.md`.', '',
         'The test-case and scenario design of this stage is in [`stage3_tests.md`](stage3_tests.md).', '',
         'Run `python -m pytest -q` to verify the scenarios. The regressions cover '

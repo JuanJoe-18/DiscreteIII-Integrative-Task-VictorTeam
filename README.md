@@ -83,10 +83,13 @@ python -m pytest -q
 # Streamlit interface → http://localhost:8501
 python -m streamlit run src/ui/app.py
 
-# React interface + JSON API → http://127.0.0.1:8000 (needs Node.js 22+ and pnpm)
-pnpm --dir frontend install --frozen-lockfile
-pnpm --dir frontend build
+# React interface + JSON API → http://127.0.0.1:8000
+# A prebuilt copy of the interface is committed in frontend/dist, so Python is enough:
 python -m src.web_api.server
+
+# Only if you change the React code (needs Node.js 22+ and pnpm), rebuild first:
+# pnpm --dir frontend install --frozen-lockfile
+# pnpm --dir frontend build
 
 # Stage 4 on its own: validate a DSL document and write its HTML
 python -m src.stage4_grammar docs/examples/wednesday.resume --html candidate.html
@@ -114,4 +117,4 @@ python scripts/export_stage4_artifacts.py   # Stage 4 diagrams; --tables prints 
 
 ## Scope and limits
 
-The examples are fictional. The system checks patterns over **reported** skills: it does not measure real competence, interpret negation ("no experience with Java") or estimate hiring accuracy, and there is no annotated dataset for precision/recall. Résumés are processed in memory by a local server bound to `127.0.0.1`. The delivery checklist with the status of every requirement is in [`docs/delivery_checklist.md`](docs/delivery_checklist.md).
+The examples are fictional. The system checks patterns over **reported** skills: it does not measure real competence, interpret negation ("no experience with Java") or estimate hiring accuracy, and there is no annotated dataset for precision/recall. Résumés are processed in memory by a local server bound to `127.0.0.1`.

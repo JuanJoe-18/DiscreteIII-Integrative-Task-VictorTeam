@@ -22,7 +22,9 @@ A responsive React + TypeScript interface (built with Vite) recovered from the F
 
 ## Running
 
-Requirements: Python with the repository dependencies, Node.js 22.12+ or 24, and pnpm. From the repository root:
+A prebuilt copy of the interface is committed in `frontend/dist`, so to **run** it only Python with the repository dependencies is needed: `python -m src.web_api.server`, then open `http://127.0.0.1:8000`.
+
+To **rebuild** it after changing the React code you also need Node.js 22.12+ or 24 and pnpm (`frontend/dist` must be rebuilt and committed again). From the repository root:
 
 ```powershell
 python -m pip install -r requirements.txt
