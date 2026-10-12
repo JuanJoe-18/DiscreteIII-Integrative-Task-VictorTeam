@@ -1,0 +1,23 @@
+classDiagram
+  class CandidateProfile {
+    +str|None name
+    +str|None summary
+    +str|None location
+    +tuple~Contact~ contacts
+    +int|None years_of_experience
+    +tuple~Experience~ experiences
+    +tuple~Education~ education
+    +tuple~str~ skills
+    +tuple~str~ unrecognized_skills
+    +tuple~str~ accepted_profiles
+  }
+  class Contact { +str kind  +str value }
+  class Experience { +str title  +str|None organization  +str|None period  +str|None description }
+  class Education { +str qualification  +str|None institution  +str|None period }
+  class ProfileDocument { +CandidateProfile profile  +str dsl  +str html  +to_dict() }
+  class ProfileValidationError { +str kind  +int|None line  +int|None column  +str|None filename }
+  CandidateProfile "1" *-- "0..*" Contact
+  CandidateProfile "1" *-- "0..*" Experience
+  CandidateProfile "1" *-- "0..*" Education
+  ProfileDocument "1" o-- "1" CandidateProfile
+  ValueError <|-- ProfileValidationError

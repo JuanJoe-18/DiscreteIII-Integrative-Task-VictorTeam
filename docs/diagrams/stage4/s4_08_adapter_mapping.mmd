@@ -1,0 +1,29 @@
+flowchart LR
+  subgraph In["Results of Stages 1–3"]
+    N["candidate_name"]
+    CT["contact{kind: [values]}"]
+    Y["years_of_experience"]
+    J["job_titles"]
+    ED["education"]
+    T["normalized_tokens"]
+    TR["traces (recognized = false)"]
+    R["results_by_profile (is_accepted)"]
+  end
+  subgraph Out["DSL sections"]
+    PN["personal.name"]
+    CO["contact entries"]
+    TY["experience.total_years"]
+    XE["experience.entry.title"]
+    EQ["education.entry.qualification"]
+    SK["skills: skill TOKEN"]
+    UN["skills: unrecognized TEXT"]
+    AC["classification: accepted id"]
+  end
+  N --> PN
+  CT -->|dedupe, keep order| CO
+  Y -->|None stays absent; 0 stays 0| TY
+  J -->|one partial record each| XE
+  ED -->|one partial record each| EQ
+  T -->|∩ vocabulary, without EXPERIENCE_PRESENT| SK
+  TR -->|original spelling| UN
+  R -->|copy, never recompute| AC

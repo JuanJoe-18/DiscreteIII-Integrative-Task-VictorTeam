@@ -1,0 +1,22 @@
+sequenceDiagram
+  autonumber
+  participant P as pipeline.process_resume
+  participant S1 as Stage 1 (re)
+  participant S2 as Stage 2 (FST)
+  participant S3 as Stage 3 (DFA)
+  participant A as candidate_from_results
+  participant Z as serialize_profile
+  participant V as validate_document
+  P->>S1: résumé text
+  S1-->>P: ExtractionResult (name, contact, years, titles, education)
+  P->>S2: raw skill mentions
+  S2-->>P: canonical tokens + traces
+  P->>S3: canonical tokens
+  S3-->>P: verdict per profile
+  P->>A: extraction, normalization, classification
+  A-->>P: CandidateProfile (no invented data)
+  P->>Z: CandidateProfile
+  Z->>Z: emit DSL, then parse it again (round trip)
+  Z-->>P: DSL text
+  P->>V: DSL text
+  V-->>P: ProfileDocument (profile, dsl, html)

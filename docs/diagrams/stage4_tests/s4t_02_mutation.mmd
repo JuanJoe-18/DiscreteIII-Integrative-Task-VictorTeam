@@ -1,0 +1,6 @@
+flowchart LR
+  F["fresh copy of src/stage4_grammar"] --> X["apply one mutant<br/>(literal text replacement)"]
+  X --> T["run the 108 Stage 4 tests"]
+  T --> Q{"any failure?"}
+  Q -- yes --> K["mutant killed"]
+  Q -- no --> S["mutant survived<br/>(gap or equivalent)"]

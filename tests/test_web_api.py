@@ -54,7 +54,7 @@ def test_overlapping_ci_tool_does_not_invent_version_control():
     assert 'GITHUB_ACTIONS' in result['normalized']
     assert 'GITHUB' not in result['normalized']
     assert not devops['accepted']
-    assert devops['missing'] == ['Control de versiones']
+    assert devops['missing'] == ['Version control']
 
 
 @pytest.mark.parametrize('contact', [
@@ -67,7 +67,7 @@ def test_contact_text_cannot_supply_a_missing_backend_skill(contact):
     assert result['normalized'] == ['JAVASCRIPT', 'POSTGRESQL', 'GIT']
     fs = next(r for r in result['results'] if r['profileId'] == 'full_stack')
     assert not fs['accepted']
-    assert fs['missing'] == ['Backend (lenguaje / entorno o framework)']
+    assert fs['missing'] == ['Backend (language / runtime or framework)']
 
 
 @pytest.mark.parametrize('section_break', ['\nExperience\n', '\n\n'])

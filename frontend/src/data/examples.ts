@@ -3,32 +3,61 @@ export type Example = { id: string; title: string; mode: 'resume' | 'tokens'; co
 export const EXAMPLES: Example[] = [
   {
     id: 'fs-ok',
-    title: 'Full Stack válido',
+    title: 'Valid Full Stack',
     mode: 'resume',
-    content: `Nombre: Laura Gómez
-Descripción: Desarrolladora web con 3 años de experiencia en aplicaciones de comercio electrónico.
+    content: `Name: Laura Gómez
+Description: Web developer with 3 years of experience building e-commerce applications.
 
-Habilidades
-- Frontend: JavaScript, TypeScript, React, HTML y CSS
-- Backend: Node.js con Express, API REST
-- Bases de datos: PostgreSQL
-- Herramientas: Git, Docker`,
+Skills
+- Frontend: JavaScript, TypeScript, React, HTML and CSS
+- Backend: Node.js with Express, REST API
+- Databases: PostgreSQL
+- Tools: Git, Docker`,
   },
   {
     id: 'fs-nogit',
-    title: 'Full Stack sin Git',
+    title: 'Full Stack without Git',
     mode: 'resume',
-    content: `Descripción: Desarrollador web enfocado en interfaces y servicios.
+    content: `Description: Web developer focused on interfaces and services.
 
-Habilidades
+Skills
 - JavaScript, React, Vue
 - Node.js, Express, GraphQL
-- MongoDB y MySQL
-- Despliegue en Vercel`,
+- MongoDB and MySQL
+- Deployment on Vercel`,
   },
   {
     id: 'ml-ok',
-    title: 'ML válido',
+    title: 'Valid ML',
+    mode: 'resume',
+    content: `Name: Andrés Patiño
+Description: Machine learning engineer working on computer vision.
+
+Technical experience
+- Python for modelling and pipelines
+- Data processing with Pandas and NumPy
+- Model training with TensorFlow and Keras
+- Storage in PostgreSQL
+- Version control with Git`,
+  },
+  {
+    id: 'ml-ds',
+    title: 'Satisfies ML and Data Scientist',
+    mode: 'resume',
+    content: `Name: Camila Rojas
+Description: Data scientist focused on predictive models.
+
+Skills
+- Python and SQL
+- Pandas, NumPy and inferential statistics
+- Visualization with Matplotlib and Tableau
+- Scikit-learn and PyTorch
+- MySQL
+- Git`,
+  },
+  {
+    id: 'ml-es',
+    title: 'Spanish résumé (ML)',
     mode: 'resume',
     content: `Nombre: Andrés Patiño
 Descripción: Ingeniero de aprendizaje automático en visión por computador.
@@ -41,23 +70,8 @@ Experiencia técnica
 - Control de versiones con Git`,
   },
   {
-    id: 'ml-ds',
-    title: 'Cumple ML y Data Scientist',
-    mode: 'resume',
-    content: `Nombre: Camila Rojas
-Descripción: Científica de datos con enfoque en modelos predictivos.
-
-Habilidades
-- Python y SQL
-- Pandas, NumPy y estadística inferencial
-- Visualización con Matplotlib y Tableau
-- Scikit-learn y PyTorch
-- MySQL
-- Git`,
-  },
-  {
     id: 'direct-bad',
-    title: 'Secuencia directa fuera de orden',
+    title: 'Direct sequence out of order',
     mode: 'tokens',
     content: 'GIT, JAVASCRIPT, REACT, NODE_JS, POSTGRESQL',
   },

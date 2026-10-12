@@ -1,0 +1,79 @@
+
+    digraph textX {
+    fontname = "Bitstream Vera Sans"
+    fontsize = 8
+    node[
+        shape=record,
+        style=filled,
+        fillcolor=aliceblue
+    ]
+    nodesep = 0.3
+    edge[dir=black,arrowtail=empty]
+
+
+140173788630048[ label="{Candidate|}"]
+
+140173790133008[ label="{Personal|name: Text\lsummary: Text\llocation: Text\l}"]
+
+140173790130128[ label="{ContactSection|}"]
+
+140173790165936[ label="{Contact|kind: ContactKind\lvalue: Text\l}"]
+
+140173788436752[ label="{ExperienceSection|total_years: NonNegativeInt\l}"]
+
+140173788550544[ label="{Experience|title: Text\lorganization: Text\lperiod: Text\ldescription: Text\l}"]
+
+140173788550000[ label="{EducationSection|}"]
+
+140173790148432[ label="{Education|qualification: Text\linstitution: Text\lperiod: Text\l}"]
+
+140173788644688[ label="{SkillSection|}"]
+
+140173788408448[ label="{*Skill|}"]
+
+140173788406768[ label="{KnownSkill|token: CanonicalToken\l}"]
+
+140173788373840[ label="{UnrecognizedSkill|value: Text\l}"]
+
+140173788372272[ label="{Classification|}"]
+
+140173788503024[ label="{AcceptedProfile|profile: ProfileId\l}"]
+
+
+
+140173788630048 -> 140173790133008[arrowtail=diamond, dir=both, headlabel="personal "]
+140173788630048 -> 140173790130128[arrowtail=diamond, dir=both, headlabel="contact "]
+140173788630048 -> 140173788436752[arrowtail=diamond, dir=both, headlabel="experience "]
+140173788630048 -> 140173788550000[arrowtail=diamond, dir=both, headlabel="education "]
+140173788630048 -> 140173788644688[arrowtail=diamond, dir=both, headlabel="skills "]
+140173788630048 -> 140173788372272[arrowtail=diamond, dir=both, headlabel="classification "]
+140173790130128 -> 140173790165936[arrowtail=diamond, dir=both, headlabel="entries 0..*"]
+140173788436752 -> 140173788550544[arrowtail=diamond, dir=both, headlabel="entries 0..*"]
+140173788550000 -> 140173790148432[arrowtail=diamond, dir=both, headlabel="entries 0..*"]
+140173788644688 -> 140173788408448[arrowtail=diamond, dir=both, headlabel="entries 0..*"]
+140173788408448 -> 140173788406768 [dir=back]
+140173788408448 -> 140173788373840 [dir=back]
+140173788372272 -> 140173788503024[arrowtail=diamond, dir=both, headlabel="entries 0..*"]
+match_rules [ shape=plaintext, label=< <table>
+	<tr>
+		<td><b>CanonicalToken</b></td><td>[A-Z][A-Z0-9_]*</td>
+	</tr>
+	<tr>
+		<td><b>Comment</b></td><td>\/\/[^\n\r]*</td>
+	</tr>
+	<tr>
+		<td><b>ContactKind</b></td><td>email|phone|linkedin|github</td>
+	</tr>
+	<tr>
+		<td><b>NonNegativeInt</b></td><td>(?:0|[1-9][0-9]*)</td>
+	</tr>
+	<tr>
+		<td><b>ProfileId</b></td><td>full_stack|machine_learning|cloud_devops|data_scientist</td>
+	</tr>
+	<tr>
+		<td><b>Text</b></td><td>&quot;(?:[^&quot;\\\x00-\x1f]|\\(?:[&quot;\\\/bfnrt]|u[0-9a-fA-F]{4}))*&quot;</td>
+	</tr>
+</table> >]
+
+
+}

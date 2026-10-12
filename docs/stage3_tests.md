@@ -218,7 +218,6 @@ The 12 mutants that the original suite missed (M12, M19, M20, M25, M28, M31–M3
 ## 8. Limitations
 
 - The oracle of OR-01 encodes the same patterns that the team defined; it proves the DFA implements the pattern, not that the pattern is the one the instructor has in mind.
-- The streamlit app and the React front end still contain Spanish interface text; they only display the English messages produced by Stage 3.
 - The Streamlit app and the web API are not covered by automated tests of Stage 3 (the API has its own `tests/test_web_api.py`).
 - Mutation analysis uses 37 hand-written mutants, not an exhaustive tool.
 

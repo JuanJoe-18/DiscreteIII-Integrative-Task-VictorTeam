@@ -1,0 +1,11 @@
+flowchart LR
+  S["DSL text"] --> L{"textX: lexical and<br/>syntactic rules"}
+  L -- no --> E1["syntax error<br/>line and column"]
+  L -- yes --> M["model processors<br/>C1 to C5"]
+  M --> C{"domain predicate"}
+  C -- no --> E2["semantic error"]
+  C -- yes --> V["validated model"]
+  V --> R["serialize + re-parse<br/>(round-trip check)"]
+  R --> H["escaped HTML"]
+  E1 --> N["no HTML written"]
+  E2 --> N

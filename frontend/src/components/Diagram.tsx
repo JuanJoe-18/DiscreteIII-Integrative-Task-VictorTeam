@@ -27,16 +27,16 @@ export default function Diagram({ profile, steps }: { profile: Profile; steps?: 
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#e0dfdc] px-4 py-2">
-        <p className="text-[13px] text-[#666]">{steps ? 'Recorrido de la evaluación resaltado en azul.' : 'Sin evaluación seleccionada: no hay recorrido que resaltar.'}</p>
-        <div className="flex items-center gap-1" role="group" aria-label="Controles de zoom">
-          <button className="rounded-full p-1.5 text-[#404040] hover:bg-[#ebebeb]" onClick={() => setScale((s) => Math.max(0.5, s - 0.25))} aria-label="Alejar"><Icon name="minus" /></button>
+        <p className="text-[13px] text-[#666]">{steps ? 'Path of the evaluation highlighted in blue.' : 'No evaluation selected: there is no path to highlight.'}</p>
+        <div className="flex items-center gap-1" role="group" aria-label="Zoom controls">
+          <button className="rounded-full p-1.5 text-[#404040] hover:bg-[#ebebeb]" onClick={() => setScale((s) => Math.max(0.5, s - 0.25))} aria-label="Zoom out"><Icon name="minus" /></button>
           <span className="w-12 text-center text-[13px] tabular-nums text-[#404040]" aria-live="polite">{Math.round(scale * 100)}%</span>
-          <button className="rounded-full p-1.5 text-[#404040] hover:bg-[#ebebeb]" onClick={() => setScale((s) => Math.min(2.5, s + 0.25))} aria-label="Acercar"><Icon name="plus" /></button>
-          <button className="ml-1 inline-flex items-center gap-1 rounded-full px-3 py-1 text-[13px] font-semibold text-[#404040] hover:bg-[#ebebeb]" onClick={() => setScale(Math.min(1, (container.current?.clientWidth ?? width) / width))}><Icon name="fit" className="size-4" /> Ajustar</button>
+          <button className="rounded-full p-1.5 text-[#404040] hover:bg-[#ebebeb]" onClick={() => setScale((s) => Math.min(2.5, s + 0.25))} aria-label="Zoom in"><Icon name="plus" /></button>
+          <button className="ml-1 inline-flex items-center gap-1 rounded-full px-3 py-1 text-[13px] font-semibold text-[#404040] hover:bg-[#ebebeb]" onClick={() => setScale(Math.min(1, (container.current?.clientWidth ?? width) / width))}><Icon name="fit" className="size-4" /> Fit</button>
         </div>
       </div>
       <div ref={container} className="overflow-auto bg-[#fafafa]" style={{ maxHeight: 520 }}>
-        <svg viewBox={`0 0 ${width} 470`} style={{ width: width * scale, maxWidth: 'none' }} role="img" aria-label={`Diagrama del DFA de ${profile.name}`} className="block">
+        <svg viewBox={`0 0 ${width} 470`} style={{ width: width * scale, maxWidth: 'none' }} role="img" aria-label={`DFA diagram of ${profile.name}`} className="block">
           <defs>
             {['#8c8c8c', '#0a66c2', '#b24020'].map((c) => (
               <marker key={c} id={`a${c.slice(1)}`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -44,15 +44,15 @@ export default function Diagram({ profile, steps }: { profile: Profile; steps?: 
               </marker>
             ))}
           </defs>
-          {/* flecha de inicio */}
+          {/* start arrow */}
           <line x1={x(START) - 60} y1={Y} x2={x(START) - R - 2} y2={Y} stroke="#1d1d1d" strokeWidth={1.6} markerEnd="url(#a8c8c8c)" />
-          <text x={x(START) - 62} y={Y - 8} fontSize="12" fill="#404040">inicio</text>
+          <text x={x(START) - 62} y={Y - 8} fontSize="12" fill="#404040">start</text>
           {/* transiciones a trampa */}
           {states.map((s) => {
             const k = `${s}>${TRAP}`
             return <line key={k} x1={x(s)} y1={Y + R} x2={trapX + (x(s) - trapX) * 0.12} y2={trapY - R - 2} stroke={used.has(k) ? '#b24020' : '#d0cfcc'} strokeDasharray="4 4" strokeWidth={used.has(k) ? 2 : 1.2} markerEnd={`url(#a${used.has(k) ? 'b24020' : '8c8c8c'})`} />
           })}
-          <text x={trapX + 40} y={trapY - 52} fontSize="12" fill="#8c8c8c">otros símbolos de Σ / fuera de orden</text>
+          <text x={trapX + 40} y={trapY - 52} fontSize="12" fill="#8c8c8c">other symbols of Σ / out of order</text>
           {edges.map(({ from, to, label }) => {
             const k = `${from}>${to}`, c = color(k), w = used.has(k) ? 2.6 : 1.4
             if (from === to) {
@@ -87,7 +87,7 @@ export default function Diagram({ profile, steps }: { profile: Profile; steps?: 
                 <circle cx={x(s)} cy={Y} r={R} fill={cur ? '#0a66c2' : on ? '#eaf3fc' : '#fff'} stroke={on ? '#0a66c2' : '#404040'} strokeWidth={on ? 2.2 : 1.5} />
                 {fin && <circle cx={x(s)} cy={Y} r={R - 5} fill="none" stroke={cur ? '#fff' : on ? '#0a66c2' : '#404040'} strokeWidth={1.5} />}
                 <text x={x(s)} y={Y + 5} textAnchor="middle" fontSize="9" fontWeight="600" fill={cur ? '#fff' : '#1d1d1d'}>{stateName(s)}</text>
-                <text x={x(s)} y={Y + R + 34} textAnchor="middle" fontSize="11" fill="#666">{s === START ? 'inicial' : profile.categories[states.indexOf(s) - 1].short}</text>
+                <text x={x(s)} y={Y + R + 34} textAnchor="middle" fontSize="11" fill="#666">{s === START ? 'initial' : profile.categories[states.indexOf(s) - 1].short}</text>
               </g>
             )
           })}
@@ -96,16 +96,16 @@ export default function Diagram({ profile, steps }: { profile: Profile; steps?: 
             <text x={trapX} y={trapY - 80} textAnchor="middle" fontSize="12" fill="#8f2f12">Σ</text>
             <circle cx={trapX} cy={trapY} r={R} fill={last === TRAP ? '#fdf1ec' : '#fff'} stroke="#b24020" strokeWidth={last === TRAP ? 2.4 : 1.5} strokeDasharray="5 3" />
             <text x={trapX} y={trapY + 5} textAnchor="middle" fontSize="14" fontWeight="600" fill="#8f2f12">q_trap</text>
-            <text x={trapX + R + 8} y={trapY + 4} fontSize="12" fill="#8f2f12">trampa (Σ)</text>
+            <text x={trapX + R + 8} y={trapY + 4} fontSize="12" fill="#8f2f12">trap (Σ)</text>
           </g>
         </svg>
       </div>
-      <ul className="flex flex-wrap gap-x-5 gap-y-2 border-t border-[#e0dfdc] px-4 py-3 text-[13px] text-[#404040]" aria-label="Leyenda">
-        <li className="flex items-center gap-2"><svg width="26" height="12" aria-hidden="true"><line x1="0" y1="6" x2="24" y2="6" stroke="#1d1d1d" strokeWidth="1.6" /></svg>Flecha de inicio → q0</li>
-        <li className="flex items-center gap-2"><svg width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="9" fill="#fff" stroke="#404040" strokeWidth="1.5" /><circle cx="11" cy="11" r="5.5" fill="none" stroke="#404040" strokeWidth="1.5" /></svg>Doble círculo: aceptación</li>
-        <li className="flex items-center gap-2"><svg width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="9" fill="#fff" stroke="#b24020" strokeWidth="1.5" strokeDasharray="4 2" /></svg>Discontinuo: trampa q_trap</li>
-        <li className="flex items-center gap-2"><svg width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="9" fill="#0a66c2" /></svg>Estado final del recorrido</li>
-        <li>Las etiquetas agrupan símbolos por categoría. Las aristas discontinuas llevan los otros símbolos de Σ a trampa; símbolos externos se rechazan antes de δ.</li>
+      <ul className="flex flex-wrap gap-x-5 gap-y-2 border-t border-[#e0dfdc] px-4 py-3 text-[13px] text-[#404040]" aria-label="Legend">
+        <li className="flex items-center gap-2"><svg width="26" height="12" aria-hidden="true"><line x1="0" y1="6" x2="24" y2="6" stroke="#1d1d1d" strokeWidth="1.6" /></svg>Start arrow → q0</li>
+        <li className="flex items-center gap-2"><svg width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="9" fill="#fff" stroke="#404040" strokeWidth="1.5" /><circle cx="11" cy="11" r="5.5" fill="none" stroke="#404040" strokeWidth="1.5" /></svg>Double circle: accepting</li>
+        <li className="flex items-center gap-2"><svg width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="9" fill="#fff" stroke="#b24020" strokeWidth="1.5" strokeDasharray="4 2" /></svg>Dashed: trap q_trap</li>
+        <li className="flex items-center gap-2"><svg width="22" height="22" aria-hidden="true"><circle cx="11" cy="11" r="9" fill="#0a66c2" /></svg>Final state of the path</li>
+        <li>Labels group symbols by category. Dashed edges take the other symbols of Σ to the trap; foreign symbols are rejected before δ.</li>
       </ul>
     </div>
   )

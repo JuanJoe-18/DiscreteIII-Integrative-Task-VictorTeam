@@ -19,18 +19,18 @@ ROOT = Path(__file__).resolve().parents[2]
 MAX_TEXT = 100_000
 CLASSIFIER = ResumeClassifier()
 LABELS = {
-    'EXPERIENCE': 'Experiencia reportada', 'FE_LANGUAGE': 'Lenguaje frontend',
-    'FE_FRAMEWORK': 'Framework frontend', 'BE_LANGUAGE': 'Lenguaje / entorno backend',
-    'BE_FRAMEWORK': 'Framework backend', 'API_COMMUNICATION': 'Comunicación API',
-    'DATABASE_SQL': 'Base de datos SQL', 'DATABASE_NOSQL': 'Base de datos NoSQL',
-    'DEVOPS_CLOUD': 'Despliegue y nube', 'VERSION_CONTROL': 'Control de versiones',
-    'CORE_LANGUAGE': 'Lenguaje', 'DATA_PROCESSING': 'Procesamiento de datos',
-    'ML_FRAMEWORKS': 'Framework ML', 'DATABASE': 'Base de datos',
-    'SCRIPTING_OS': 'Scripting / sistema operativo', 'CICD': 'CI/CD',
-    'CONTAINERS_ORCHESTRATION': 'Contenedores', 'CLOUD_IAC': 'Cloud / IaC',
-    'DATA_LANGUAGE': 'Lenguaje analítico', 'DATA_ANALYSIS_STATS': 'Análisis / estadística',
-    'DATA_VISUALIZATION': 'Visualización', 'MACHINE_LEARNING': 'Machine Learning',
-    'BACKEND': 'Backend (lenguaje / entorno o framework)',
+    'EXPERIENCE': 'Reported experience', 'FE_LANGUAGE': 'Frontend language',
+    'FE_FRAMEWORK': 'Frontend framework', 'BE_LANGUAGE': 'Backend language / runtime',
+    'BE_FRAMEWORK': 'Backend framework', 'API_COMMUNICATION': 'API communication',
+    'DATABASE_SQL': 'SQL database', 'DATABASE_NOSQL': 'NoSQL database',
+    'DEVOPS_CLOUD': 'Deployment and cloud', 'VERSION_CONTROL': 'Version control',
+    'CORE_LANGUAGE': 'Language', 'DATA_PROCESSING': 'Data processing',
+    'ML_FRAMEWORKS': 'ML framework', 'DATABASE': 'Database',
+    'SCRIPTING_OS': 'Scripting / operating system', 'CICD': 'CI/CD',
+    'CONTAINERS_ORCHESTRATION': 'Containers', 'CLOUD_IAC': 'Cloud / IaC',
+    'DATA_LANGUAGE': 'Analytical language', 'DATA_ANALYSIS_STATS': 'Analysis / statistics',
+    'DATA_VISUALIZATION': 'Visualization', 'MACHINE_LEARNING': 'Machine Learning',
+    'BACKEND': 'Backend (language / runtime or framework)',
 }
 
 
@@ -46,7 +46,7 @@ def profile_catalog():
             categories.append({
                 'id': cat.name, 'label': LABELS[cat.name], 'short': LABELS[cat.name],
                 'tokens': sorted(cat.skills), 'required': required,
-                'requirement': 'Obligatorio' if required else 'Alternativa obligatoria' if group else 'Opcional',
+                'requirement': 'Required' if required else 'Required alternative' if group else 'Optional',
                 'group': LABELS.get(group, group),
             })
         transitions = {state: {} for state in sorted(formal.states)}
@@ -77,24 +77,24 @@ def extract_resume(text):
 
 def evaluate(payload):
     if not isinstance(payload, dict):
-        raise ValueError('La solicitud debe ser un objeto JSON.')
+        raise ValueError('The request must be a JSON object.')
     mode, text = payload.get('mode'), payload.get('text')
     if mode not in ('resume', 'tokens') or not isinstance(text, str):
-        raise ValueError('Indica un modo válido y una entrada de texto.')
+        raise ValueError('Provide a valid mode and a text input.')
     if not text.strip() or len(text) > MAX_TEXT:
-        raise ValueError('La entrada está vacía o supera los 100 000 caracteres.')
+        raise ValueError('The input is empty or exceeds 100,000 characters.')
     if mode == 'resume':
         pipeline = process_resume(text, classifier=CLASSIFIER)
         fragments = [{'text': t.raw, 'token': t.canonical} for t in pipeline.normalization.traces]
         tokens, candidate = pipeline.classification.input_tokens, pipeline.candidate
         known = set().union(*(a.profile.alphabet for a in CLASSIFIER.automata.values())) - {'EXPERIENCE_PRESENT'}
         if not known.intersection(tokens):
-            raise ValueError('No se reconocieron habilidades técnicas del catálogo en el texto.')
+            raise ValueError('No technical skills from the catalog were recognized in the text.')
     else:
         fragments, candidate = [], {}
         tokens = [token for token in re.split(r'[,\s]+', text.strip()) if token]
         if any(not re.fullmatch(r'[A-Z][A-Z0-9_]*', token) for token in tokens):
-            raise ValueError('Usa símbolos canónicos en MAYÚSCULAS, separados por comas o espacios.')
+            raise ValueError('Use canonical UPPERCASE symbols separated by commas or spaces.')
     results = []
     for pid, automaton in CLASSIFIER.automata.items():
         profile = automaton.profile
@@ -108,9 +108,9 @@ def evaluate(payload):
             'profileId': pid, 'accepted': result.is_accepted, 'sequence': result.evaluated_tokens,
             'steps': [{'index': step.step_number, 'from': step.source_state, 'to': step.target_state,
                        'symbol': step.symbol, 'explanation':
-                       'El estado trampa absorbe la entrada.' if step.source_state == 'q_trap' else
+                       'The trap state absorbs the input.' if step.source_state == 'q_trap' else
                        result.rejection_reason if not step.is_valid_transition else
-                       f'Lee {step.symbol} ({LABELS.get(step.category, step.category)}).'} for step in result.trace],
+                       f'Reads {step.symbol} ({LABELS.get(step.category, step.category)}).'} for step in result.trace],
             'finalState': result.final_state, 'observed': observed,
             'missing': [LABELS.get(name, name) for name in result.missing_categories],
             'foreign': result.ignored_tokens, 'reason': result.rejection_reason,
@@ -122,9 +122,9 @@ def evaluate(payload):
 
 def validate_profile(payload):
     if not isinstance(payload, dict) or not isinstance(payload.get('text'), str):
-        raise ValueError('Indica la DSL en el campo text.')
+        raise ValueError('Provide the DSL in the text field.')
     if not payload['text'].strip() or len(payload['text']) > MAX_TEXT:
-        raise ValueError('La DSL está vacía o supera los 100 000 caracteres.')
+        raise ValueError('The DSL is empty or exceeds 100,000 characters.')
     return validate_document(payload['text']).to_dict()
 
 
@@ -158,7 +158,7 @@ class Handler(SimpleHTTPRequestHandler):
         try:
             length = int(self.headers.get('Content-Length', '0'))
             if not 0 < length <= 500_000:
-                raise ValueError('Tamaño de solicitud inválido.')
+                raise ValueError('Invalid request size.')
             if self.headers.get_content_type() != 'application/json':
                 raise ValueError('Se requiere Content-Type: application/json.')
             payload = json.loads(self.rfile.read(length).decode('utf-8'))

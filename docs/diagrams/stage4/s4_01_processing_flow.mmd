@@ -1,0 +1,12 @@
+flowchart TD
+  A(["DSL text"]) --> B{"Lexical + syntactic<br/>recognition (textX PEG)<br/>w ∈ L(G)?"}
+  B -- no --> E1["ProfileValidationError<br/>kind = syntax, line:column"]
+  B -- yes --> C["Object graph<br/>(parse tree with attributes)"]
+  C --> D{"Model processor<br/>domain predicate D(m)?<br/>C1 … C5"}
+  D -- no --> E2["ProfileValidationError<br/>kind = semantic, line:column"]
+  D -- yes --> F["CandidateProfile<br/>(immutable)"]
+  F --> G["_render: escape every value"]
+  G --> H(["ProfileDocument<br/>profile · dsl · html"])
+  style E1 fill:#fde2e2,stroke:#b42318
+  style E2 fill:#fde2e2,stroke:#b42318
+  style H fill:#dcfce7,stroke:#15803d

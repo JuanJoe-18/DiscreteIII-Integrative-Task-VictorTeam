@@ -17,11 +17,11 @@ export function Chip({ children, tone = 'neutral' }: { children: ReactNode; tone
 export function StatusBadge({ accepted }: { accepted: boolean }) {
   return accepted ? (
     <span className="inline-flex items-center gap-1 rounded-full bg-[#e6f4ea] px-2.5 py-1 text-[13px] font-semibold text-[#0b6b2e]">
-      <Icon name="check" className="size-4" /> Patrón cumplido
+      <Icon name="check" className="size-4" /> Pattern satisfied
     </span>
   ) : (
     <span className="inline-flex items-center gap-1 rounded-full bg-[#f3f2ef] px-2.5 py-1 text-[13px] font-semibold text-[#5e5e5e] ring-1 ring-[#c9c8c5]">
-      <Icon name="x" className="size-4" /> Patrón no cumplido
+      <Icon name="x" className="size-4" /> Pattern not satisfied
     </span>
   )
 }
@@ -38,7 +38,7 @@ export function Button({ variant = 'primary', className = '', ...p }: React.Butt
 export function EngineNotice({ className = '' }: { className?: string }) {
   return (
     <p className={`inline-flex items-center gap-1.5 rounded-md bg-[#eaf3fc] px-2.5 py-1 text-[12px] font-medium text-[#004182] ${className}`}>
-      <Icon name="info" className="size-3.5" /> Motor real · Python + pyformlang
+      <Icon name="info" className="size-3.5" /> Real engine · Python + pyformlang
     </p>
   )
 }

@@ -1,180 +1,117 @@
-# ResumeLens — Formal Language-Based Resume Screening
-> **Estructuras Discretas III (2026) — Tarea Integradora**  
-> **Equipo:** Víctor Team  
+# ResumeLens — Formal Language-Based Résumé Screening
 
----
+> **Computación y Estructuras Discretas III (2026-2) — Integrative Task 1** · Universidad Icesi
+> **Team:** Víctor Team
 
-##  Descripción del Proyecto
-**ResumeLens** es un sistema automatizado de preselección curricular basado en la teoría de lenguajes formales y modelos computacionales. El sistema procesa hojas de vida textuales, extrae competencias técnicas, las normaliza a un formato canónico y determina si el perfil del candidato satisface formalmente los requisitos de cualificación de un cargo profesional sin emitir juicios heurísticos o subjetivos.
+ResumeLens processes plain-text résumés and decides, for four professional profiles, whether the qualifications **explicitly written** in the résumé satisfy a formally defined qualification pattern. Every stage of the pipeline is a formal model: regular expressions, finite-state transducers, deterministic finite automata and a context-free grammar. ResumeLens does **not** score, rank or recommend candidates and does not make hiring decisions; a candidate may satisfy zero, one or several profiles.
 
-### Pipeline de 4 Etapas:
-1. **Etapa 1 — Extracción de Información:** Expresiones Regulares (`re`).
-2. **Etapa 2 — Normalización y Orden Canónico:** Transductores Finitos (FST).
-3. **Etapa 3 — Reconocimiento de Patrones de Cualificación:** Autómatas Finitos Deterministas (DFA) implementados con `pyformlang`.
-4. **Etapa 4 — Lenguaje de Especificación del Candidato:** Gramáticas Libres de Contexto (CFG) con `textX` y visualización HTML.
+## Team
 
-**Estado actual:** las cuatro etapas están integradas mediante `src/pipeline.py`.
-React y Streamlit ejecutan extracción con `re`, normalización y ordenamiento con
-FST reales, cuatro DFA en `pyformlang` y generación de una DSL que textX valida
-antes de producir HTML. React permite editar, validar y descargar el documento;
-Streamlit muestra y descarga el resultado del pipeline.
-Consulta [la gramática, sus decisiones y pruebas](docs/stage4_grammar.md).
+| Member | GitHub | Main responsibility |
+|---|---|---|
+| Víctor Cardona | [@victor-xnieb](https://github.com/victor-xnieb) | Stage 1 (regular expressions) and Stage 2 (finite-state transducers); Stage 3 documentation and tests review; poster |
+| Juan José Aponza Valencia | [@JuanJoe-18](https://github.com/JuanJoe-18) | Stage 3 (DFA classifier), Streamlit interface, repository |
+| Juan David Gomez | [@Juancho31g](https://github.com/Juancho31g) | Stage 4 (textX DSL and HTML), React interface and web API, literature review |
 
-La extracción conserva menciones de cargos y formación; no asocia automáticamente
-empleadores, instituciones o fechas. Esos detalles pueden completarse en la DSL.
-Validar una DSL editada no vuelve a ejecutar los DFA ni certifica datos personales.
+**IDE:** Visual Studio Code (Python and Pylance extensions) · **Language:** Python 3.12 · **Formal-language libraries:** `re`, `pyformlang` 1.0.11, `textX` 4.4 · **Tests:** `pytest` · **Interfaces:** Streamlit and React (Vite + TypeScript) over a local JSON API.
 
----
+## The pipeline
 
-##  Perfiles Profesionales Soportados (4 Perfiles)
+| Stage | Formal model | Input → output | Package | Design / formalization | Test design |
+|---|---|---|---|---|---|
+| 1. Information extraction | Regular expressions (`re`) | résumé text → mentions of skills, contact data, years, titles, education | [`src/stage1_regex`](src/stage1_regex) | [`docs/stage1_regex.md`](docs/stage1_regex.md) | [`docs/stage1_tests.md`](docs/stage1_tests.md) |
+| 2. Normalization and canonical order | Finite-state transducers (`pyformlang`) | raw mentions → canonical tokens (`JS` → `JAVASCRIPT`) sorted per profile | [`src/stage2_fst`](src/stage2_fst) | [`docs/stage2_fst.md`](docs/stage2_fst.md) | [`docs/stage2_tests.md`](docs/stage2_tests.md) |
+| 3. Qualification-pattern recognition | Deterministic finite automata (`pyformlang`) | canonical tokens → ACCEPTED / REJECTED per profile, with trace | [`src/stage3_classifier`](src/stage3_classifier) | [`docs/stage3_formalization.md`](docs/stage3_formalization.md) | [`docs/stage3_tests.md`](docs/stage3_tests.md) |
+| 4. Candidate profile language | Context-free grammar in EBNF (`textX`) | stage results → validated DSL document → HTML | [`src/stage4_grammar`](src/stage4_grammar) | [`docs/stage4_grammar.md`](docs/stage4_grammar.md) | [`docs/stage4_tests.md`](docs/stage4_tests.md) |
 
-| # | Perfil | Dominio | Orden Canónico de Categorías |
+`src/pipeline.py` (`process_resume`) runs the four stages and is shared by both interfaces. The architecture and the contracts between stages are in [`docs/architecture.md`](docs/architecture.md); the literature review is in [`docs/literature_review.md`](docs/literature_review.md).
+
+## Supported profiles
+
+| # | Profile | Domain | Canonical order of categories |
 |---|---|---|---|
-| **1** | **Full Stack Developer** *(Predefinido)* | Software Engineering | $\text{Frontend} \to \text{Backend} \to \text{Database} \to \text{Version Control}$ |
-| **2** | **Machine Learning Engineer** *(Predefinido)* | AI / Data | $\text{Language} \to \text{Data Processing} \to \text{ML Framework} \to \text{Database} \to \text{Version Control}$ |
-| **3** | **Cloud & DevOps Engineer** *(Propuesto)* | Software Engineering | $\text{Scripting/OS} \to \text{CI/CD} \to \text{Containers} \to \text{Cloud/IaC} \to \text{Version Control}$ |
-| **4** | **Data Scientist** *(Propuesto)* | AI / Data | $\text{Language} \to \text{Data Analysis/Stats} \to \text{Data Visualization} \to \text{Machine Learning} \to \text{Version Control}$ |
+| 1 | Full Stack Developer *(given)* | Software engineering | Experience? → Frontend language → Frontend framework? → Backend (language or framework) → API? → Database (SQL or NoSQL) → DevOps/cloud? → Version control |
+| 2 | Machine Learning Engineer *(given)* | AI / data | Language → Data processing → ML framework → Database → Version control |
+| 3 | Cloud & DevOps Engineer *(proposed)* | Software engineering | Scripting/OS → CI/CD → Containers → Cloud/IaC → Version control |
+| 4 | Data Scientist *(proposed)* | AI / data | Language → Data analysis/statistics → Visualization → Machine learning → Version control |
 
----
+`?` marks optional categories. Each DFA is total, has an explicit trap state `q_trap` and is documented with its 5-tuple, transition table and diagram.
 
-##  Estructura del Repositorio
+## Repository structure
 
-```
+```text
 DiscreteIII-Integrative-Task-VictorTeam/
-├── docs/
-│   ├── Initial Doc.md                 # Enunciado y rúbrica oficial de la tarea
-│   └── stage3_formalization.md        # Formalización matemática (5-tuplas, tablas y diagramas)
-├── src/
-│   ├── __init__.py
-│   ├── stage1_regex/                  # Etapa 1: Extracción con Regex
-│   ├── stage2_fst/                    # Etapa 2: Normalización con FST
-│   ├── stage3_classifier/             # Etapa 3: Motor de Autómatas (pyformlang)
-│   │   ├── profiles.py                # Definición de perfiles, categorías y alfabetos
-│   │   ├── automata_models.py         # Modelos DFA y 5-tuplas en pyformlang
-│   │   ├── classifier.py              # Motor de evaluación y trazabilidad
-│   │   └── visualizer.py              # Generador de grafos (Mermaid y Graphviz)
-│   ├── stage4_grammar/                # Etapa 4: DSL y CFG con textX
-│   ├── pipeline.py                    # Orquestación compartida de las cuatro etapas
-│   ├── web_api/                       # API y servidor local de React
-│   └── ui/                            # Frontend Interactivo
-│       └── app.py                     # Aplicación Web Streamlit
-├── tests/
-│   ├── __init__.py
-│   └── test_stage3.py                 # Suite de pruebas unitarias (Pytest)
-├── requirements.txt                   # Dependencias del proyecto
-└── README.md                          # Documentación principal
+├── README.md                     ← this file
+├── requirements.txt              ← Python dependencies
+├── src/                          ← implementation (see src/README.md)
+│   ├── stage1_regex/             ← Stage 1: regular expressions, sections, extractor, JSON storage
+│   ├── stage2_fst/               ← Stage 2: aliases, FST cascade, normalizer and canonical sort
+│   ├── stage3_classifier/        ← Stage 3: profiles, DFAs, classifier, diagram generator
+│   ├── stage4_grammar/           ← Stage 4: candidate.tx grammar, parser, generator, HTML renderer, CLI
+│   ├── pipeline.py               ← process_resume: Stages 1 → 4
+│   ├── web_api/server.py         ← local JSON API + static server for the React app
+│   └── ui/app.py                 ← Streamlit interface
+├── frontend/                     ← React + TypeScript interface (see frontend/README.md)
+├── tests/                        ← pytest suites and résumé fixtures (see tests/README.md)
+├── docs/                         ← design, formalization, tests, literature review (see docs/README.md)
+│   ├── diagrams/                 ← PNG diagrams of every stage and their sources
+│   └── examples/                 ← example DSL documents and generated HTML
+├── scripts/                      ← generators of diagrams and formal documents (see scripts/README.md)
+└── output/pdf/                   ← poster PDF
 ```
 
----
+Each folder has its own README with the location and purpose of every file: [`src/`](src/README.md), [`tests/`](tests/README.md), [`docs/`](docs/README.md), [`scripts/`](scripts/README.md), [`frontend/`](frontend/README.md), [`docs/diagrams/`](docs/diagrams/README.md), [`docs/examples/`](docs/examples/README.md).
 
-##  Instalación y Ejecución
+## Installation
 
-### 1. Clonar el repositorio y preparar el entorno
 ```bash
 git clone https://github.com/JuanJoe-18/DiscreteIII-Integrative-Task-VictorTeam.git
 cd DiscreteIII-Integrative-Task-VictorTeam
-```
-
-### 2. Instalar dependencias
-```bash
 python -m venv .venv
-# Windows PowerShell (sin necesidad de activar el entorno):
-.venv/Scripts/python -m pip install -r requirements.txt
+# Windows PowerShell:  .venv\Scripts\python -m pip install -r requirements.txt
+# Linux / macOS:       .venv/bin/python -m pip install -r requirements.txt
 ```
 
-En los comandos siguientes usa `.venv/Scripts/python` en Windows o activa el
-entorno antes de ejecutar `python`. En Linux/macOS el ejecutable está en
-`.venv/bin/python`. Las verificaciones de entrega usaron Python 3.12.
+Use `.venv\Scripts\python` (Windows) or `.venv/bin/python` (Linux/macOS), or activate the environment, in the commands below. The checks for the delivery used Python 3.12. Graphviz (`dot`) is needed only to regenerate diagrams.
 
-### 3. Ejecutar las pruebas unitarias
-```bash
-python -m pytest tests -v
-```
-
-Para validar un perfil escrito en la DSL de la etapa 4:
+## Running
 
 ```bash
-python -m src.stage4_grammar docs/examples/wednesday.resume
-python -m src.stage4_grammar docs/examples/wednesday.resume --html candidate.html
-```
+# All tests (883 test cases)
+python -m pytest -q
 
-Si el documento es válido, imprime sus datos estructurados como JSON. En caso de
-error devuelve un código de salida distinto de cero y señala la línea y columna.
-`docs/examples/invalid_candidate.resume` permite demostrar un rechazo sintáctico.
-La opción `--html` no crea ni sobrescribe la salida cuando la DSL es inválida.
-
-### 4. Lanzar la Interfaz Web (Streamlit)
-```bash
+# Streamlit interface → http://localhost:8501
 python -m streamlit run src/ui/app.py
-```
 
-La interfaz se abrirá en `http://localhost:8501`, permitiendo:
-- Evaluar candidatos en vivo o con ejemplos predefinidos.
-- Visualizar el camino de estados recorrido en el grafo de cada DFA.
-- Inspeccionar las 5-tuplas formales y diagramas Mermaid/Graphviz.
-- Ejecutar la suite de pruebas unitarias desde la propia interfaz web.
-
-### 5. Lanzar la nueva interfaz React (diseño de Figma Make)
-
-La interfaz conserva el diseño inspirado en LinkedIn y se conecta al motor Python real.
-Desde la raíz del repositorio, con Node.js y pnpm instalados:
-
-```powershell
+# React interface + JSON API → http://127.0.0.1:8000 (needs Node.js 22+ and pnpm)
 pnpm --dir frontend install --frozen-lockfile
 pnpm --dir frontend build
 python -m src.web_api.server
+
+# Stage 4 on its own: validate a DSL document and write its HTML
+python -m src.stage4_grammar docs/examples/wednesday.resume --html candidate.html
+python -m src.stage4_grammar docs/examples/invalid_candidate.resume      # located syntax error, exit code 1
 ```
 
-Abrir `http://127.0.0.1:8000`. Incluye evaluación de currículos y tokens,
-resultados por perfil, recorrido de estados, diagramas y tablas formales.
-El resultado incluye una DSL editable y un perfil HTML validado descargable.
-Los perfiles y transiciones provienen de `pyformlang`, sin una clasificación simulada
-en el navegador. Más información en [`frontend/README.md`](frontend/README.md).
+Both interfaces call the same Python pipeline; the browser never simulates the automata. The Streamlit app shows the extraction, normalization, per-profile verdicts, the state trace on each DFA, the formal 5-tuples and the validated profile; the React app adds a DSL editor with validation and downloads of the `.resume` and `.html` files.
 
----
+## Quick example
 
-##  Formalización Matemática (Resumen de la 5-Tupla)
+Résumé fragment: *"Wednesday Addams — 3 years of experience developing web applications. Technical Skills: JS, React.js, NodeJS, Postgres, Git."*
 
-Para cada autómata $i \in \{FS, ML, DEVOPS, DS\}$:
-$$\mathcal{M}_i = (Q_i, \Sigma_i, \delta_i, q_0, F_i)$$
+1. **Stage 1** finds `JS`, `React.js`, `NodeJS`, `Postgres`, `Git` and 3 years of experience.
+2. **Stage 2** produces `EXPERIENCE_PRESENT JAVASCRIPT REACT NODE_JS POSTGRESQL GIT`.
+3. **Stage 3**: the Full Stack DFA ends in its accepting state → **ACCEPTED**; the other three profiles are rejected with the missing categories.
+4. **Stage 4** writes and validates `candidate { personal { name "Wednesday Addams"; } … classification { accepted full_stack; } }` and renders it as a self-contained HTML page (a richer example: [`docs/examples/wednesday.html`](docs/examples/wednesday.html)).
 
-- **$Q$:** Estados que representan el último bloque de competencias consumido más el estado trampa explícito $q_{trap}$.
-- **$\Sigma$:** Alfabeto de tecnologías normalizadas clasificadas por categorías disjuntas.
-- **$\delta$:** Función total y determinista con bucles por categoría, avances, saltos opcionales en Full Stack y rechazo hacia el estado trampa.
-- **$q_0$:** Estado inicial.
-- **$F$:** Estado de aceptación final que certifica la posesión de todas las competencias obligatorias.
+## Regenerating the documentation
 
-*Para ver la formalización matemática completa con tablas de transición y diagramas de estados, consultar [`docs/stage3_formalization.md`](docs/stage3_formalization.md).*
-
-`ResumeClassifier.classify(tokens)` recibe habilidades normalizadas y prepara
-una secuencia relevante en el orden de cada perfil. Puede aceptar varios perfiles;
-las habilidades ajenas quedan registradas y no satisfacen requisitos.
-`evaluate_profile(profile_id, tokens)` y `classify(tokens, prepare_input=False)`
-realizan reconocimiento estricto, sin corregir el orden ni filtrar símbolos.
-
-Full Stack exige lenguaje/tecnología frontend, backend (lenguaje/entorno o framework),
-base de datos (SQL o NoSQL) y control de versiones. Las demás categorías son opcionales.
-Los otros perfiles exigen al menos una habilidad por cada categoría definida.
-Los años de experiencia se normalizan a `EXPERIENCE_PRESENT`, opcional; el valor exacto
-se conserva en los metadatos de extracción. No se exige un mínimo de años.
-
-Para mantener la documentación alineada con los modelos:
-
-```powershell
-python scripts/export_formalization.py
-python scripts/export_diagrams.py
+```bash
+python scripts/export_formalization.py      # docs/stage3_formalization.md from the real DFAs
+python scripts/export_diagrams.py           # DFA diagrams in docs/diagrams/
+python scripts/export_stage4_artifacts.py   # Stage 4 diagrams; --tables prints FIRST/FOLLOW/PREDICT
 ```
 
-La formalización incluye la verificación de cada requisito del punto 3 frente
-al enunciado disponible en `docs/Initial Doc.md`. El exportador de imágenes requiere conexión.
+## Scope and limits
 
-## Documentación y entrega
-
-- [Arquitectura, contratos y decisiones](docs/architecture.md).
-- [Revisión de literatura y fuentes primarias](docs/literature_review.md).
-- [Diseño y evidencia de pruebas de la etapa 4](docs/stage4_tests.md).
-- [Verificación de requisitos y límites](docs/delivery_checklist.md).
-- [Póster de investigación (PDF)](output/pdf/resumelens-poster.pdf).
-
-Los ejemplos son ficticios. El sistema verifica patrones sobre habilidades
-reportadas; no mide competencia real, precisión de contratación ni idoneidad laboral.
+The examples are fictional. The system checks patterns over **reported** skills: it does not measure real competence, interpret negation ("no experience with Java") or estimate hiring accuracy, and there is no annotated dataset for precision/recall. Résumés are processed in memory by a local server bound to `127.0.0.1`. The delivery checklist with the status of every requirement is in [`docs/delivery_checklist.md`](docs/delivery_checklist.md).

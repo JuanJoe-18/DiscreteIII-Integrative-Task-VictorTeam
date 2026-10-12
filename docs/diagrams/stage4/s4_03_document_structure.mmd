@@ -1,0 +1,9 @@
+flowchart LR
+  C["candidate { … }"] --> P["personal<br/>name? · summary? · location?"]
+  C --> K["contact<br/>(email | phone | linkedin | github TEXT ;)*"]
+  C --> X["experience<br/>total_years? · entry*"]
+  X --> XE["entry<br/>title · organization? · period? · description?"]
+  C --> E["education<br/>entry*"]
+  E --> EE["entry<br/>qualification · institution? · period?"]
+  C --> S["skills<br/>(skill TOKEN ; | unrecognized TEXT ;)*"]
+  C --> L["classification<br/>(accepted profile_id ;)*"]

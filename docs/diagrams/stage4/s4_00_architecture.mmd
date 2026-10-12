@@ -1,0 +1,19 @@
+flowchart LR
+  subgraph S4["src/stage4_grammar"]
+    TX["candidate.tx<br/>EBNF grammar (textX)"]
+    PA["parser.py<br/>parse_profile · domain checks"]
+    MO["models.py<br/>CandidateProfile (frozen)"]
+    GE["generator.py<br/>candidate_from_results · serialize_profile"]
+    RE["renderer.py<br/>validate_document · HTML"]
+    CLI["__main__.py<br/>command line"]
+  end
+  S1["Stage 1<br/>contact regexes"] -.reused by.-> PA
+  S2["Stage 2<br/>canonical vocabulary"] -.reused by.-> PA
+  S2 -.-> GE
+  S3["Stage 3<br/>profile titles · DFA results"] -.-> RE
+  TX --> PA --> MO
+  PA --> GE --> RE
+  RE --> CLI
+  RE --> PIPE["src/pipeline.py"]
+  PIPE --> API["src/web_api/server.py"] --> WEB["frontend (React)"]
+  PIPE --> UI["src/ui/app.py (Streamlit)"]

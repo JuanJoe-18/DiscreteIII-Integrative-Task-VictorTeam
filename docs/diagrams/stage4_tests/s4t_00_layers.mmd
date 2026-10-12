@@ -1,0 +1,12 @@
+flowchart TB
+  A["test_stage4_grammar.py · 58<br/>language: partitions, violations, unicode, CLI"]
+  B["test_stage4_generation.py · 29<br/>serialization, round trips, HTML, concurrency"]
+  C["test_pipeline_stage4.py · 11<br/>Stages 1 → 4 with résumé fixtures"]
+  D["test_web_stage4.py · 10<br/>HTTP: /api/evaluate and /api/validate-profile"]
+  U["Unit level: parser, generator, renderer"]
+  I["Integration level: pipeline and web API"]
+  A --> U
+  B --> U
+  C --> I
+  D --> I
+  U --> I

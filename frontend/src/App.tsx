@@ -11,9 +11,9 @@ import AboutScreen from './screens/AboutScreen'
 
 type Section = 'evaluate' | 'explore' | 'about'
 const NAV: { id: Section; label: string; short: string; icon: string }[] = [
-  { id: 'evaluate', label: 'Evaluar currículo', short: 'Evaluar', icon: 'doc' },
-  { id: 'explore', label: 'Explorar autómatas', short: 'Autómatas', icon: 'graph' },
-  { id: 'about', label: 'Acerca del proyecto', short: 'Acerca', icon: 'info' },
+  { id: 'evaluate', label: 'Evaluate résumé', short: 'Evaluate', icon: 'doc' },
+  { id: 'explore', label: 'Explore automata', short: 'Automata', icon: 'graph' },
+  { id: 'about', label: 'About the project', short: 'About', icon: 'info' },
 ]
 
 export default function App() {
@@ -61,22 +61,22 @@ export default function App() {
   }
   if (!ready) return <div className="min-h-screen bg-[#f3f2ef] p-8 text-[#1d1d1d]">
     <Card className="mx-auto max-w-xl p-6"><h1 className="text-xl font-semibold text-[#0a66c2]">ResumeLens</h1>
-      <p className="mt-3" role={connectionError ? 'alert' : 'status'}>{connectionError ?? 'Conectando con los autómatas Python…'}</p>
-      {connectionError && <button className="mt-4 rounded-full bg-[#0a66c2] px-4 py-2 text-white" onClick={() => setAttempt(attempt + 1)}>Reintentar conexión</button>}
+      <p className="mt-3" role={connectionError ? 'alert' : 'status'}>{connectionError ?? 'Connecting to the Python automata…'}</p>
+      {connectionError && <button className="mt-4 rounded-full bg-[#0a66c2] px-4 py-2 text-white" onClick={() => setAttempt(attempt + 1)}>Retry connection</button>}
     </Card></div>
   const sides = !(section === 'explore' && expanded) && section !== 'about'
   const profile = PROFILES.find((p) => p.id === profileId)!
 
   return (
     <div className="min-h-screen bg-[#f3f2ef] pb-16 text-[#1d1d1d] md:pb-0">
-      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2">Saltar al contenido</a>
+      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2">Skip to content</a>
       <header className="sticky top-0 z-30 border-b border-[#e0dfdc] bg-white">
         <div className="mx-auto flex h-[52px] max-w-[1128px] items-center justify-between px-4">
-          <button onClick={() => setSection('evaluate')} className="flex items-center gap-2 rounded" aria-label="ResumeLens, inicio">
+          <button onClick={() => setSection('evaluate')} className="flex items-center gap-2 rounded" aria-label="ResumeLens, home">
             <span className="grid size-8 place-items-center rounded bg-[#0a66c2] text-[14px] font-bold text-white" aria-hidden="true">RL</span>
             <span className="text-[18px] font-bold tracking-tight text-[#0a66c2]">ResumeLens</span>
           </button>
-          <nav aria-label="Principal" className="hidden md:block">
+          <nav aria-label="Main" className="hidden md:block">
             <ul className="flex">
               {NAV.map((n) => (
                 <li key={n.id}>
@@ -93,17 +93,17 @@ export default function App() {
 
       <div className={`mx-auto grid max-w-[1128px] gap-6 px-4 py-6 ${sides ? 'lg:grid-cols-[225px_minmax(0,1fr)_300px]' : ''} ${section === 'explore' && expanded ? 'max-w-[1400px]' : ''}`}>
         {sides && (
-          <aside className="space-y-3" aria-label="Candidato y ejemplos">
+          <aside className="space-y-3" aria-label="Candidate and examples">
             <CandidateCard evaluation={evaluation} />
             <Card className="p-4" aria-labelledby="ex-title">
-              <h2 id="ex-title" className="text-[14px] font-semibold">Ejemplos demostrativos</h2>
+              <h2 id="ex-title" className="text-[14px] font-semibold">Demonstration examples</h2>
               <ul className="mt-2 space-y-1">
                 {EXAMPLES.map((e) => (
                   <li key={e.id}>
                     <button onClick={() => loadExample(e.id)} aria-pressed={exampleId === e.id}
                       className={`w-full rounded-md px-2 py-1.5 text-left text-[14px] ${exampleId === e.id ? 'bg-[#eaf3fc] font-semibold text-[#004182]' : 'text-[#404040] hover:bg-[#f3f2ef]'}`}>
                       {e.title}
-                      <span className="block text-[12px] font-normal text-[#666]">{e.mode === 'resume' ? 'Hoja de vida' : 'Tokens directos'}</span>
+                      <span className="block text-[12px] font-normal text-[#666]">{e.mode === 'resume' ? 'Résumé' : 'Direct tokens'}</span>
                     </button>
                   </li>
                 ))}
@@ -123,21 +123,21 @@ export default function App() {
         </main>
 
         {sides && (
-          <aside className="space-y-3" aria-label="Explicación y requisitos">
+          <aside className="space-y-3" aria-label="Explanation and requirements">
             <Card className="p-4" aria-labelledby="how">
-              <h2 id="how" className="text-[14px] font-semibold">Cómo se procesa</h2>
+              <h2 id="how" className="text-[14px] font-semibold">How it is processed</h2>
               <ol className="mt-2 space-y-2 text-[13px] text-[#404040]">
-                <li><strong>1. Extracción.</strong> Expresiones regulares localizan habilidades explícitas.</li>
-                <li><strong>2. Normalización.</strong> Los FST convierten variantes en símbolos y establecen el orden por perfil.</li>
-                <li><strong>3. Orden canónico.</strong> En hoja de vida, cada perfil recibe solo sus símbolos, ordenados por categoría. Los demás no lo invalidan.</li>
-                <li><strong>4. Reconocimiento.</strong> El DFA del perfil acepta o rechaza la secuencia.</li>
-                <li><strong>5. Documento.</strong> textX valida la DSL antes de generar el perfil HTML.</li>
+                <li><strong>1. Extraction.</strong> Regular expressions locate explicit skills.</li>
+                <li><strong>2. Normalization.</strong> FSTs turn variants into symbols and set the order for each profile.</li>
+                <li><strong>3. Canonical order.</strong> In résumé mode each profile receives only its own symbols, sorted by category. Other symbols do not invalidate it.</li>
+                <li><strong>4. Recognition.</strong> The profile DFA accepts or rejects the sequence.</li>
+                <li><strong>5. Document.</strong> textX validates the DSL before the HTML profile is generated.</li>
               </ol>
-              <p className="mt-3 text-[12px] text-[#666]">En modo directo la secuencia se evalúa tal cual: desorden o símbolos externos llevan al estado trampa.</p>
+              <p className="mt-3 text-[12px] text-[#666]">In direct mode the sequence is evaluated as written: wrong order or foreign symbols lead to the trap state.</p>
             </Card>
             <Card className="p-4" aria-labelledby="req">
-              <h2 id="req" className="text-[14px] font-semibold">Requisitos · {profile.name}</h2>
-              <label className="sr-only" htmlFor="req-sel">Perfil</label>
+              <h2 id="req" className="text-[14px] font-semibold">Requirements · {profile.name}</h2>
+              <label className="sr-only" htmlFor="req-sel">Profile</label>
               <select id="req-sel" value={profileId} onChange={(e) => setProfileId(e.target.value)} className="mt-2 w-full rounded-md border border-[#8c8c8c] bg-white px-2 py-1 text-[13px]">
                 {PROFILES.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
@@ -157,7 +157,7 @@ export default function App() {
         )}
       </div>
 
-      <nav aria-label="Principal móvil" className="fixed inset-x-0 bottom-0 z-30 border-t border-[#e0dfdc] bg-white md:hidden">
+      <nav aria-label="Main (mobile)" className="fixed inset-x-0 bottom-0 z-30 border-t border-[#e0dfdc] bg-white md:hidden">
         <ul className="grid grid-cols-3">
           {NAV.map((n) => (
             <li key={n.id}>
@@ -177,16 +177,16 @@ function CandidateCard({ evaluation }: { evaluation?: Evaluation }) {
   const c = evaluation?.candidate ?? {}
   const initials = c.name ? c.name.split(/\s+/).map((w) => w[0]).slice(0, 2).join('').toUpperCase() : ''
   return (
-    <Card className="overflow-hidden" aria-label="Resumen del candidato">
+    <Card className="overflow-hidden" aria-label="Candidate summary">
       <div className="h-14 bg-[#a0b4c8]" aria-hidden="true" />
       <div className="-mt-8 px-4 pb-4">
         <div className="grid size-16 place-items-center rounded-full border-2 border-white bg-[#dce6f1] text-[20px] font-semibold text-[#004182]" aria-hidden="true">
           {initials || <svg viewBox="0 0 24 24" className="size-9 text-[#8ea6bf]" fill="currentColor"><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7z" /></svg>}
         </div>
-        <p className={`mt-2 text-[16px] font-semibold ${c.name ? '' : 'text-[#8c8c8c]'}`}>{c.name ?? 'Nombre no indicado'}</p>
-        <p className={`text-[13px] ${c.description ? 'text-[#404040]' : 'text-[#8c8c8c]'}`}>{c.description ?? (evaluation?.mode === 'tokens' ? 'Modo tokens: sin datos personales.' : 'Descripción no indicada')}</p>
+        <p className={`mt-2 text-[16px] font-semibold ${c.name ? '' : 'text-[#8c8c8c]'}`}>{c.name ?? 'Name not provided'}</p>
+        <p className={`text-[13px] ${c.description ? 'text-[#404040]' : 'text-[#8c8c8c]'}`}>{c.description ?? (evaluation?.mode === 'tokens' ? 'Token mode: no personal data.' : 'Description not provided')}</p>
         <div className="mt-3 border-t border-[#e0dfdc] pt-3">
-          <p className="text-[12px] font-semibold text-[#666]">Habilidades detectadas</p>
+          <p className="text-[12px] font-semibold text-[#666]">Detected skills</p>
           <div className="mt-1.5 flex flex-wrap gap-1">{evaluation?.normalized.length ? evaluation.normalized.map((t) => <Chip key={t}>{t}</Chip>) : <span className="text-[13px] text-[#8c8c8c]">—</span>}</div>
         </div>
       </div>

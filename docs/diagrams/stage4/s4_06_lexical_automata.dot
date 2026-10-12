@@ -1,0 +1,21 @@
+digraph lexical {
+  graph [rankdir=LR, fontname="Helvetica", nodesep=0.3];
+  node [fontname="Helvetica", fontsize=11, shape=circle, style=filled, fillcolor="#e0f2fe", color="#0369a1"];
+  edge [fontname="Helvetica", fontsize=10, color="#334155"];
+  subgraph cluster_uint { label="UINT  =  0 | [1-9][0-9]*"; color="#94a3b8"; fontname="Helvetica";
+    u0 [label="u0"]; u1 [label="u1", shape=doublecircle]; u2 [label="u2", shape=doublecircle];
+    su [shape=point, width=0.05]; su -> u0;
+    u0 -> u1 [label="0"]; u0 -> u2 [label="1-9"]; u2 -> u2 [label="0-9"]; }
+  subgraph cluster_canon { label="CANONICAL_TOKEN  =  [A-Z][A-Z0-9_]*"; color="#94a3b8"; fontname="Helvetica";
+    c0 [label="c0"]; c1 [label="c1", shape=doublecircle];
+    sc [shape=point, width=0.05]; sc -> c0;
+    c0 -> c1 [label="A-Z"]; c1 -> c1 [label="A-Z 0-9 _"]; }
+  subgraph cluster_text { label="TEXT  =  \" ( [^\"\\ control] | \\ ( [\"\\/bfnrt] | u hex{4} ) )* \""; color="#94a3b8"; fontname="Helvetica";
+    t0 [label="t0"]; t1 [label="t1"]; t2 [label="t2", shape=doublecircle]; te [label="esc"];
+    h1 [label="h1"]; h2 [label="h2"]; h3 [label="h3"]; h4 [label="h4"];
+    st [shape=point, width=0.05]; st -> t0;
+    t0 -> t1 [label="\""]; t1 -> t1 [label="any char except \" \\ U+0000–U+001F"];
+    t1 -> te [label="\\"]; te -> t1 [label="\" \\ / b f n r t"];
+    te -> h1 [label="u"]; h1 -> h2 [label="hex"]; h2 -> h3 [label="hex"]; h3 -> h4 [label="hex"]; h4 -> t1 [label="hex"];
+    t1 -> t2 [label="\""]; }
+}

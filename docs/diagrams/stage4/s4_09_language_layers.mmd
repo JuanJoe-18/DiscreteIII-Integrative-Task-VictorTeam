@@ -1,0 +1,12 @@
+flowchart TB
+  subgraph U["T* — every token sequence"]
+    subgraph LG["L(G) — syntactically valid documents (LL(1), regular)"]
+      subgraph LV["L_valid = { w ∈ L(G) : D(model(w)) } — accepted by parse_profile"]
+        GEN["image of serialize_profile<br/>(canonical forms)"]
+      end
+    end
+  end
+  style U fill:#f8fafc,stroke:#64748b
+  style LG fill:#e0f2fe,stroke:#0369a1
+  style LV fill:#dcfce7,stroke:#15803d
+  style GEN fill:#fef9c3,stroke:#a16207

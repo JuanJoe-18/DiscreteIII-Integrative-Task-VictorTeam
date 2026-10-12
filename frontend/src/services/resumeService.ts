@@ -7,11 +7,11 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   try {
     const response = await fetch(path, { ...options, signal: controller.signal })
     const body = await response.json()
-    if (!response.ok) throw new Error(body.error ?? 'No se pudo completar la solicitud.')
+    if (!response.ok) throw new Error(body.error ?? 'The request could not be completed.')
     return body as T
   } catch (error) {
     if (error instanceof TypeError || (error instanceof DOMException && error.name === 'AbortError'))
-      throw new Error('No se pudo conectar con el motor Python. Comprueba que el servidor esté funcionando.')
+      throw new Error('Could not connect to the Python engine. Check that the server is running.')
     throw error
   } finally { clearTimeout(timeout) }
 }
