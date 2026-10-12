@@ -17,7 +17,7 @@
 ## Interaction log
 
 ### 1. Stage 3 review and scenario tests (11 Oct 2026)
-- **Own input:** the Stage 3 code and formal document of the repository. [add the exact prompt]
+
 - **AI output:** review of the formalization, scenario tests and test-design document for Stage 3.
 - **My validation:** ran `python -m pytest -q`; corrected the statement about the Full Stack automaton not being minimal.
 
